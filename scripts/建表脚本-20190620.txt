@@ -1,0 +1,21 @@
+
+CREATE TABLE `user_action_app_new_d`(
+  `appname` string,
+  `device_number` string
+  )
+PARTITIONED BY (
+  `pt_days` string
+  )
+stored as orc;
+
+CREATE TABLE `user_action_app_loss_d`(
+  `appname` string,
+  `device_number` string
+  )
+PARTITIONED BY (
+  `pt_days` string
+  )
+stored as orc;
+
+
+
