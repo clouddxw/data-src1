@@ -1,0 +1,29 @@
+nohup: ignoring input
+Java HotSpot(TM) 64-Bit Server VM warning: Using incremental CMS is deprecated and will likely be removed in a future release
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/opt/beh/core/hbase/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/beh/core/hadoop/share/hadoop/common/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]
+201906	新闻各app自然流失	sohu_news	387826	251046
+201906	新闻各app自然流失	tencent_news	775069	454761
+201906	新闻各app自然流失	ifeng	648128	426042
+201906	新闻各app自然流失	toutiao	724041	464889
+201906	新闻各app自然流失	kuaibao	266721	171203
+201906	新闻各app自然流失	sina_news	601467	395363
+201906	新闻各app自然流失	wangyinews	739936	493523
+201906	音乐各app自然流失	kugou	849501	516559
+201906	音乐各app自然流失	qq_music	1016654	624590
+201906	音乐各app自然流失	kuwo	845799	552304
+201906	音乐各app自然流失	wangyi_music	420158	253274
+201906	新闻各app自然新增	sohu_news	308138	213539
+201906	新闻各app自然新增	tencent_news	845781	573968
+201906	新闻各app自然新增	ifeng	801977	552510
+201906	新闻各app自然新增	toutiao	636029	473441
+201906	新闻各app自然新增	kuaibao	684092	427171
+201906	新闻各app自然新增	sina_news	809274	555301
+201906	新闻各app自然新增	wangyinews	239887	179497
+201906	新闻各app自然新增	kugou	752438	535800
+201906	新闻各app自然新增	qq_music	773658	560421
+201906	新闻各app自然新增	kuwo	608221	434705
+201906	新闻各app自然新增	wangyi_music	841127	586358

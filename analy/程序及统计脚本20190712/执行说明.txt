@@ -1,7 +1,0 @@
-
-1.替换jar文件
-2.全流程补一下 20190612 、20190615的数据
-3.流失用户表补全 20190601--20190619的数据  USER_ACTION_APP_LOSS_D
-4.执行统计脚本
-5.执行tmp_ximalaya_load.sh 
-6.补跑 runToutiaoClickAnalyzertmp 20190701--20190707

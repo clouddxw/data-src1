@@ -1,0 +1,34 @@
+nohup: ignoring input
+ls: cannot access /opt/beh/core/spark/lib/spark-assembly-*.jar: No such file or directory
+Java HotSpot(TM) 64-Bit Server VM warning: Using incremental CMS is deprecated and will likely be removed in a future release
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/opt/beh/core/hbase/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/beh/core/hadoop/share/hadoop/common/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]
+201906	新闻各app竞争流失	统计App	uv	uv_剔除流量卡
+201906	新闻各app竞争流失	ifeng	648213	426092
+201906	新闻各app竞争流失	sina_news	601570	395427
+201906	新闻各app竞争流失	sohu_news	387842	251055
+201906	新闻各app竞争流失	tencent_news	775172	454830
+201906	新闻各app竞争流失	toutiao	724321	465090
+201906	新闻各app竞争流失	kuaibao	266740	171215
+201906	新闻各app竞争流失	wangyinews	739970	493554
+201906	音乐各app竞争流失	统计App	uv	uv_剔除流量卡
+201906	音乐各app竞争流失	kugou	849604	516637
+201906	音乐各app竞争流失	qq_music	1027796	632343
+201906	音乐各app竞争流失	kuwo	845890	552368
+201906	音乐各app竞争流失	wangyi_music	443045	267229
+月份	新闻各app自然新增	统计App	uv	uv_剔除流量卡
+201906	新闻各app新增来源	kuaibao	567589	351469
+201906	新闻各app新增来源	sohu_news	264211	180902
+201906	新闻各app新增来源	tencent_news	596726	403715
+201906	新闻各app新增来源	toutiao	442401	321006
+201906	新闻各app新增来源	ifeng	639593	433513
+201906	新闻各app新增来源	sina_news	639363	432832
+201906	新闻各app新增来源	wangyinews	193009	143186
+月份	音乐各app自然新增	统计App	uv	uv_剔除流量卡
+201906	音乐各app新增来源	kuwo	469322	323142
+201906	音乐各app新增来源	qq_music	541255	382421
+201906	音乐各app新增来源	kugou	524458	358594
+201906	音乐各app新增来源	wangyi_music	696518	470766

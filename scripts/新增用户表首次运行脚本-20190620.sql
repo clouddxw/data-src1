@@ -11,5 +11,5 @@ select pt_days,
      (select t.*,
              row_number() over(partition by appname,device_number order by pt_days asc) rn
           from  user_action_app_d t
-          where pt_days>='20190301')
+          where pt_days>='20190301') a
     where rn=1;
