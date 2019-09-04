@@ -294,7 +294,8 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                             "                  or instr(a.url_host,'koowo.com')>0" +
                             "                  or instr(a.url_host,'kuwo.cn')>0" +
                             "                  or instr(a.url_host,'snssdk.com')>0" +
-                            "                  or instr(a.url_host,'ximalaya.com')>0 ) "
+                            "                  or instr(a.url_host,'ximalaya.com')>0 "+
+                            "                  or a.url_host like 'a%.bytecdn.cn') "
                     );
                     tmpSampleBase.cache().createOrReplaceTempView("tmpsamplebase");
 
@@ -329,16 +330,18 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "                when url_host='p.ssp.qq.com'   then regexp_extract(url,'(&article_id=)(.*?)&',2) "+
                         "                when url_host='lives.l.qq.com'   then regexp_extract(url,'(&articleId=)(.*?)&',2) "+
                         "                when (instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' ) then regexp_extract(url,'(&item_id=)(.*?)&',2) "+
-                        "                when (url_host like 'a%.pstatp.com' and instr(url,'/article/content/')>0 ) then split(url,'/')[7] "+
+                        "                when ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) then split(url,'/')[7] "+
                         "                when (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 )  then reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'(&keyword=)(.*?)&',2), 'UTF-8') "+
                         "                when  (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) then reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'(singerAndSong=)(.*?)&',2), 'UTF-8') "+
                         "                when  url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then regexp_replace(regexp_extract(url,'/([goods/images|cart|promotion]+?/[0-9\\-]+?/.+?)\\\\.[jpg|png|jpeg]',1),'goods/images','goods%images') "+
+                        "                when url_host in ('mobwsa.ximalaya.com','mobile.ximalaya.com') then regexp_extract(url,'(albumId=)(.*?)&',2)  "+
+                        "                when url_host = 'adse.wsa.ximalaya.com' then regexp_extract(url,'(album=)(.*?)&',2) "+
                         "                else null  "+
                         "        end con1, "+
                         "        case    when instr(url_host,'inews.qq.com')>0 then substr(regexp_extract(url,'(&id=)(.*?)&',2),0,3)  "+
                         "                when url_host='p.ssp.qq.com'  then substr(regexp_extract(url,'(&article_id=)(.*?)&',2),0,3) "+
                         "                when url_host='lives.l.qq.com'  then substr(regexp_extract(url,'(&articleId=)(.*?)&',2),0,3) "+
-                        "                when (url_host like 'a%.pstatp.com' and instr(url,'/article/content/')>0 ) then split(url,'/')[8] "+
+                        "                when ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) then split(url,'/')[8] "+
                         "                else null  "+
                         "        end con2, "+
                         "        case    when instr(url_host,'inews.qq.com')>0 then regexp_extract(url,'(&chlid=)(.*?)&',2) "+
@@ -352,7 +355,7 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "             when ( instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' )  then regexp_extract(url,'(&from=)(.*?)&',2) "+
                         "                else null  "+
                         "        end con4, "+
-                        "        '' con5,pt_days, "+
+                        "        case when url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') then start_time else '' end con5,pt_days, "+
                         "        case when instr(url_host,'inews.qq.com')>0 or url_host ='p.ssp.qq.com' then 'tencent_news_article' "+
                         "                when url_host = 'lives.l.qq.com' then 'tencent_news_video' "+
                         "                when instr(url_host,'snssdk.com')>0  then 'toutiao_article' "+
@@ -360,6 +363,7 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "                when (instr(url_host,'snssdk.com')>0 and  instr(url,'news/feed')>0 )  then 'toutiao_catgory' "+
                         "                when url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then 'pdd' "+
                         "                when url_host in ('krcs.kugou.com','bjacshow.kugou.com') then 'kugou' "+
+                        "                when url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') then 'ximalaya' "+
                         "        end model,prov_id  "+
                         "    from tmpsamplebase  "+
                         "where   ( instr(url_host,'inews.qq.com')>0  and (( instr(url,'getSimpleNews')>0 and (instr(url,'&id=')>0 or instr(url,'&child=')>0 or instr(url,'&pagestartFrom')>0) ) or  ( instr(url,'getNewsRelateModule')>0  and (instr(url,'&id=')>0 or instr(url,'&child=')>0 or instr(url,'&pagestartFrom')>0) ))) "+
@@ -367,7 +371,8 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "        or (url_host='lives.l.qq.com' and (instr(url,'&articleId=')>0 and instr(url,'&channelId=')>0)) "+
                         "        or (instr(url_host,'snssdk.com')>0 and (url like '%article/information%app_name=news_article%' or instr(url,'news/feed')>0) ) "+
                         "        or (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 ) "+
-                        "        or (url_host like 'a%.pstatp.com' and instr(url,'/article/content/')>0 ) "+
+                        "        or ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) "+
+                        "        or (url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') and (instr(url,'albumId=')>0 or instr(url,'album=')>0) ) '"+
                         "        or (url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') and (instr(url,'goods/images')>0 or instr(url,'cart')>0 or instr(url,'promotion')>0)) "+
                         "        or (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) ");
 
@@ -487,4 +492,3 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
 
 
 }
-
