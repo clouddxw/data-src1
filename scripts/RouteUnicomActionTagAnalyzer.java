@@ -168,7 +168,7 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "         model  tx_con "+
                         "   from   "+ dataBase + "."+UnicomTable.USER_ACTION_CONTEXT_D +" a"+
                         "    where pt_days = '" + ptDays + "'" +
-                        "      and model in ('toutiao_article','tencent_news_article','tencent_news_video') "+
+                        "      and model in ('toutiao_article','tencent_news_article','tencent_news_video','toutiao_pull') "+
                         "      and length(trim(con1))>0"+
                         "    group by pt_days,device_number,model "+
                         "union all  "+
@@ -359,7 +359,7 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "        case when instr(url_host,'inews.qq.com')>0 or url_host ='p.ssp.qq.com' then 'tencent_news_article' "+
                         "                when url_host = 'lives.l.qq.com' then 'tencent_news_video' "+
                         "                when instr(url_host,'snssdk.com')>0  then 'toutiao_article' "+
-                        "                when url_host like 'a%.pstatp.com' and url like '%/article/content/%' then  'toutiao_pull' "+
+                        "                when (url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and url like '%/article/content/%' then  'toutiao_pull' "+
                         "                when (instr(url_host,'snssdk.com')>0 and  instr(url,'news/feed')>0 )  then 'toutiao_catgory' "+
                         "                when url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then 'pdd' "+
                         "                when url_host in ('krcs.kugou.com','bjacshow.kugou.com') then 'kugou' "+
@@ -372,7 +372,7 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                         "        or (instr(url_host,'snssdk.com')>0 and (url like '%article/information%app_name=news_article%' or instr(url,'news/feed')>0) ) "+
                         "        or (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 ) "+
                         "        or ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) "+
-                        "        or (url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') and (instr(url,'albumId=')>0 or instr(url,'album=')>0) ) '"+
+                        "        or (url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') and (instr(url,'albumId=')>0 or instr(url,'album=')>0) ) "+
                         "        or (url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') and (instr(url,'goods/images')>0 or instr(url,'cart')>0 or instr(url,'promotion')>0)) "+
                         "        or (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) ");
 
