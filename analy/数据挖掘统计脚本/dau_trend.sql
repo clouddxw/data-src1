@@ -25,7 +25,7 @@ select '酷我各模块统计' model,
                 max(case when instr(urltag,'isVip=1')>0 or (url_host='musicpay.kuwo.cn' and instr(urltag,'ptype=vip')>0) then 1 else 0 end) tag2, -- 20190720修改会员规则
                 max(case when url_host='search.kuwo.cn' then 1 else 0 end) tag3
             from  user_action_tag_d
-            where pt_days>='20190801' and pt_days<='20190831'
+            where pt_days>='20190901' and pt_days<='20190931'
               and instr(url_host,'.kuwo.cn')>0
               group BY
                 pt_days,
@@ -97,7 +97,7 @@ select '酷狗各模块统计' model,
                 max(case when (url_host in ('ip2.kugou.com','newsongretry.kugou.com','ip.kugou.com') and instr(urltag,'vip_type=6')>0 )
                        or (url_host='ads.service.kugou.com' and instr(urltag,'isVip=1')>0 ) then 1 else 0 end) tag10
             from  user_action_tag_d
-            where pt_days>='20190801' and pt_days<='20190831'
+            where pt_days>='20190901' and pt_days<='20190931'
               and instr(url_host,'kugou.com')>0
               group BY
                 pt_days,
@@ -285,7 +285,7 @@ select  '网易云各模块' app,
                 max(case when instr(urltag,'dailyTask')>0 then 1 else 0 end)    tag32,
                 max(case when instr(urltag,'keyword')>0 then 1 else 0 end)    tag33
               from  user_action_tag_d
-            where pt_days>='20190801' and pt_days<='20190831'
+            where pt_days>='20190901' and pt_days<='20190931'
               and url_host='interface.music.163.com'
               group by pt_days,
                       device_number,
@@ -361,7 +361,7 @@ select '喜马拉雅各模块统计' model,
                 max(case when instr(urltag,'vipCategory')>0 then 1 else 0 end) tag1,
                 max(case when instr(urltag,'vipStatus=2')>0 then 1 else 0 end) tag2,
                 max(case when instr(urltag,'vipStatus=1')>0 or instr(urltag,'vipStatus=3')>0 then 1 else 0 end) tag3,
-                max(case when url_host in ('liveroom.ximalaya.com','mobwsa.ximalaya.com') and instr(urltag,'roomId') then 1 else 0 end) tag4, -- 20190720修改直播规则
+                max(case when url_host in ('liveroom.ximalaya.com','mobwsa.ximalaya.com') and instr(urltag,'roomId')>0 then 1 else 0 end) tag4, -- 20190720修改直播规则
                 max(case when url_host ='mp.ximalaya.com' and instr(urltag,'recharge')>0 then 1 else 0 end) tag5,
                 max(case when url_host ='searchwsa.ximalaya.com'  then 1 else 0 end) tag6,
                 max(case when url_host ='ad.ximalaya.com' and instr(urltag,'positionName=focus%categoryId=-2')>0 then 1 else 0 end) tag7,
@@ -373,7 +373,7 @@ select '喜马拉雅各模块统计' model,
                 max(case when instr(urltag,'sceneId=')>0 then 1 else 0 end) tag13,
                 max(case when instr(urltag,'sleep/theme')>0 then 1 else 0 end) tag14 -- 20190720添加助眠冥想模块
             from  user_action_tag_d
-            where pt_days>='20190801' and pt_days<='20190831'
+            where pt_days>='20190901' and pt_days<='20190931'
               and instr(url_host,'ximalaya.com')>0
               group BY
                 pt_days,
@@ -389,7 +389,7 @@ select        '喜马拉雅场景电台统计' model,
                count(*) pv,
                count(distinct device_number) uv
          from  user_action_tag_d
-      where pt_days>='20190801' and pt_days<='20190831'
+      where pt_days>='20190901' and pt_days<='20190931'
         and instr(url_host,'ximalaya.com')>0 and instr(urltag,'sceneId=')>0
         group by pt_days,
                  regexp_extract(urltag,'(sceneId=-{0,1}[0-9]+)',1);
@@ -402,7 +402,7 @@ select        '喜马拉雅频道统计' model,
                count(*) pv,
                count(distinct device_number) uv
          from  user_action_tag_d
-      where pt_days>='20190801' and pt_days<='20190831'
+      where pt_days>='20190901' and pt_days<='20190931'
         and instr(url_host,'ximalaya.com')>0 and instr(urltag,'categoryId=')>0
         group by pt_days,
                  regexp_extract(urltag,'(categoryId=-{0,1}[0-9]+)',1);
@@ -416,7 +416,7 @@ select        '喜马拉雅rankingListId排行' model,
                count(*) pv,
                count(distinct device_number) uv
          from  user_action_tag_d
-      where pt_days>='20190801' and pt_days<='20190831'
+      where pt_days>='20190901' and pt_days<='20190931'
         and instr(url_host,'ximalaya.com')>0 and instr(urltag,'rankingListId=')>0
         group by pt_days,
                  regexp_extract(urltag,'(rankingListId=-{0,1}[0-9]+)',1);
@@ -483,7 +483,7 @@ from
                 max(case when url_host='hmma.baidu.com' then 1 else 0 end) tag11,
                 max(case when url_host='mbd.baidu.com' then 1 else 0 end) tag12
         from  user_action_tag_d
-        where pt_days>='20190801' and pt_days<='20190831'
+        where pt_days>='20190901' and pt_days<='20190931'
                 and (instr(url_host,'baidu.com')>0 or instr(url_host,'bdstatic.com')>0 or url_host='smartprogram.baidu.com' )
                 group BY
                 pt_days,
@@ -552,7 +552,7 @@ select 'UC各模块统计' model,
                 max(case when url_host='sugs.m.sm.cn' and instr(urltag,'ucinput')>0 then 1 else 0 end) tag9,
                 max(case when url_host in ('sugs.m.sm.cn','so.m.sm.cn','xm.sm.cn') then 1 else 0 end) tag10
             from  user_action_tag_d
-            where pt_days>='20190801' and pt_days<='20190831'
+            where pt_days>='20190901' and pt_days<='20190931'
               and (instr(url_host,'.uczzd.cn')>0 or instr(url_host,'.uc.cn')>0 or url_host in ('sugs.m.sm.cn','so.m.sm.cn','xm.sm.cn') or instr(url_host,'.shuqireader.com')>0)
               group BY
                 pt_days,
@@ -578,6 +578,11 @@ select '头条未加密部分各模块统计' model,
        'uv_头条-我的页面' uv12,
        'uv_主TL视频点击' uv13,
        'uv_微头条' uv14,
+       'uv_category=hotsoon_video' uv15,
+       'uv_category=hotsoon_video_detail_draw' uv16,
+       'uv_category=live' uv17,
+       'uv_videolive' uv18,
+       'uv_get_ugc_video' uv19,
        'pv_头条-搜索' pv1,
        'pv_头条-小程序' pv2,
        'pv_头条-短视频category' pv3,
@@ -591,7 +596,13 @@ select '头条未加密部分各模块统计' model,
        'pv_头条-microapp' pv11,
        'pv_头条-我的页面' pv12,
        'pv_主TL视频点击' pv13,
-       'pv_微头条' pv14;
+       'pv_微头条' pv14,
+       'pv_category=hotsoon_video' pv15,
+       'pv_category=hotsoon_video_detail_draw' pv16,
+       'pv_category=live' pv17,
+       'pv_videolive' pv18,
+       'pv_get_ugc_video' pv19
+       ;
 select '头条未加密部分各模块统计' model,
         pt_days,
         count(distinct(case when tag1=1 then device_number else null end)) uv1,
@@ -608,6 +619,11 @@ select '头条未加密部分各模块统计' model,
         count(distinct(case when tag12=1 then device_number else null end)) uv12,
         count(distinct(case when tag13=1 then device_number else null end)) uv13,
         count(distinct(case when tag14=1 then device_number else null end)) uv14,
+        count(distinct(case when tag15=1 then device_number else null end)) uv15,
+        count(distinct(case when tag16=1 then device_number else null end)) uv16,
+        count(distinct(case when tag17=1 then device_number else null end)) uv17,
+        count(distinct(case when tag18=1 then device_number else null end)) uv18,
+        count(distinct(case when tag19=1 then device_number else null end)) uv19,
         sum(case when tag1=1 then 1 else 0 end) pv1,
         sum(case when tag2=1 then 1 else 0 end) pv2,
         sum(case when tag3=1 then 1 else 0 end) pv3,
@@ -621,7 +637,12 @@ select '头条未加密部分各模块统计' model,
         sum(case when tag11=1 then 1 else 0 end) pv11,
         sum(case when tag12=1 then 1 else 0 end) pv12,
         sum(case when tag13=1 then 1 else 0 end) pv13,
-        sum(case when tag14=1 then 1 else 0 end) pv14
+        sum(case when tag14=1 then 1 else 0 end) pv14,
+        sum(case when tag15=1 then 1 else 0 end) pv15,
+        sum(case when tag16=1 then 1 else 0 end) pv16,
+        sum(case when tag17=1 then 1 else 0 end) pv17,
+        sum(case when tag18=1 then 1 else 0 end) pv18,
+        sum(case when tag19=1 then 1 else 0 end) pv19
    from
       (select pt_days,
             device_number,
@@ -639,9 +660,14 @@ select '头条未加密部分各模块统计' model,
             max(case when url_host='microapp.bytedance.com' then 1 else 0 end) tag11,
             max(case when instr(urltag,'user/profile')>0 then 1 else 0 end) tag12,
             max(case when (instr(urltag,'video/play')>0 or instr(urltag,'video/app')>0) and instr(urltag,'from_category=__all__')>0 then 1 else 0 end) tag13,
-            max(case when instr(urltag,'ugc/repost/')>0 then 1 else 0 end) tag14
+            max(case when instr(urltag,'ugc/repost/')>0 then 1 else 0 end) tag14,
+            max(case when instr(urltag,'category=hotsoon_video')>0 then 1 else 0 end) tag15,
+            max(case when instr(urltag,'category=hotsoon_video_detail_draw')>0 then 1 else 0 end) tag16,
+            max(case when instr(urltag,'category=live')>0 then 1 else 0 end) tag17,
+            max(case when instr(urltag,'videolive')>0 then 1 else 0 end) tag18,
+            max(case when instr(urltag,'get_ugc_video')>0 then 1 else 0 end) tag19
           from  user_action_tag_d
-          where pt_days>='20190801' and pt_days<='20190831'
+          where pt_days>='20190901' and pt_days<='20190931'
             and ((url_host like '%.snssdk.com' and instr(urltag,'app_name=news_article')>0)
                   or url_host in ('developer.toutiao.com','microapp.bytedance.com'))
         group by pt_days,
@@ -696,7 +722,7 @@ select  '头条极速版各模块统计' model,
             max(case when instr(urltag,'category=hotsoon_video')>0 or instr(urltag,'category=hotsoon_video_detail_draw')>0 or instr(urltag,'category=live')>0 or instr(urltag,'videolive')>0  or instr(urltag,'get_ugc_video')>0  then 1 else 0 end) tag6,
             max(case when instr(urltag,'user/profile')>0 then 1 else 0 end) tag7
           from  user_action_tag_d
-          where  pt_days>='20190801' and pt_days<='20190831'
+          where  pt_days>='20190901' and pt_days<='20190931'
             and ((url_host like '%.snssdk.com' and instr(urltag,'app_name=news_article_lite')>0)
                   or url_host in ('developer.toutiao.com','microapp.bytedance.com'))
         group by pt_days,
@@ -720,7 +746,7 @@ select '抖音' app,
         actiontag,
         row_number() over(partition by pt_days,device_number order by cast(actiontag as int) desc) rn
         from  user_action_tag_d
-     where  pt_days>='20190801' and pt_days<='20190831'
+     where  pt_days>='20190901' and pt_days<='20190931'
        and  url_host = 'effect.snssdk.com') a
 where a.rn=1
 group by pt_days;
@@ -729,14 +755,14 @@ select '-- -- -*****************************************************************
 
 -- 腾讯新闻内容频道分布
 select
-   '201908' month_id,
+   '201909' month_id,
   '腾讯新闻内容频道分布1' app,
   con2,
   count(*) pv,
   count(distinct con1) id_cnt,
   count(distinct device_number) uv
   from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
   and model in ('tencent_news_article','tencent_news_video')
   and con2<>'201'
   group by con2;
@@ -744,14 +770,14 @@ where pt_days>='20190801' and pt_days<='20190831'
 select '-- -- -*******************************************************************************************************************-- -- -';
 
   select
-    '201908' month_id,
+    '201909' month_id,
     '腾讯新闻内容频道分布2' app,
     con3,
     count(*) pv,
     count(distinct con1) id_cnt,
     count(distinct device_number) uv
     from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
     and model in ('tencent_news_article','tencent_news_video')
     and con2='201'
     group by con3;
@@ -760,14 +786,14 @@ select '-- -- -*****************************************************************
 
 -- 腾讯内容分布统计
   select
-    '201908' month_id,
+    '201909' month_id,
     '腾讯文章pagefrom统计' app,
     con4,
     count(*) pv,
     count(distinct con1) id_cnt,
     count(distinct device_number) uv
     from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
     and model='tencent_news_article'
     group by con4;
 
@@ -775,14 +801,14 @@ select '-- -- -*****************************************************************
 
 -- 头条内容分布统计
   select
-    '201908' month_id,
+    '201909' month_id,
     '头条内容分布统计1' app,
     con3,
     count(*) pv,
     count(distinct con1) id_cnt,
     count(distinct device_number) uv
     from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
     and model='toutiao_article'
     group by con3;
 
@@ -790,28 +816,28 @@ select '-- -- -*****************************************************************
 
 -- 头条内容分布统计
   select
-    '201908' month_id,
+    '201909' month_id,
     '头条内容分布统计2' app,
     con4,
     count(*) pv,
     count(distinct con1) id_cnt,
     count(distinct device_number) uv
     from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
     and model='toutiao_article'
     group by con4;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 -- 内容表分model统计
-select '201908' month_id,
+select '201909' month_id,
        '内容表统计',
         model,
         count(distinct con1) con_cnt,
         count(*) pv,
         count(distinct device_number) uv
     from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
     group by model;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
@@ -1002,7 +1028,7 @@ select  '钉钉各模块统计' model,
         max(case when url_host='login.dingtalk.com' then 1 else 0 end) tag34,
         max(case when url_host='qr.dingtalk.com' then 1 else 0 end) tag35
       from  user_action_tag_d
-      where  pt_days>='20190801' and pt_days<='20190831'
+      where  pt_days>='20190901' and pt_days<='20190931'
         and (instr(url_host,'.dingtalk.com')>0
              or instr(url_host,'.dingding.xin')>0
              or instr(url_host,'.mxhichina.com')>0
@@ -1038,7 +1064,7 @@ select '拼多多各模块统计' model,
                 max(case when (url_host='t13img.yangkeduo.com' and instr(urltag,'cart')>0) or (url_host='pinduoduoimg.yangkeduo.com' and instr(urltag,'promotion')>0) then 1 else 0 end) tag2,
                 max(case when url_host='t16img.yangkeduo.com' and instr(urltag,'pdd_ims')>0 then 1 else 0 end) tag3
         from  user_action_tag_d
-        where  pt_days>='20190801' and pt_days<='20190831'
+        where  pt_days>='20190901' and pt_days<='20190931'
                 and (instr(url_host,'.pinduoduo.com')>0
                 or instr(url_host,'.yangkeduo.com')>0)
                 group by pt_days,
@@ -1376,7 +1402,7 @@ select  '支付宝各模块统计' model,
                   max(case when url_host='bxcloudstore.alicdn.com' then 1 else 0 end) tag64,
                   max(case when url_host='yebprod.alipay.com' then 1 else 0 end) tag65
             from user_action_tag_d
-            where  pt_days>='20190801' and pt_days<='20190831'
+            where  pt_days>='20190901' and pt_days<='20190931'
               and  (url_host in ('mfbizweb.19ego.cn','api.mgzf.com','ali.enmonster.com','api.hellobike.com','h5.ele.me','pages.tmall.com','h5.vip.youku.com','mps.amap.com','mtop.damai.cn','apis.didapinche.com',
                         'fragment.tmall.com','s.click.tmall.com','s.click.taobao.com','magear.pangku.com','aisle.amap.com','easysearchcard.chuxingyouhui.com','mcdj.qipinke.com','huaka.cmicrwx.cn','miniappweb.shuqireader.com',
                         'orders.kfc.com.cn','imgorder.kfc.com.cn','app.woaizuji.com','ubt.hellobike.com','crnetzsjk.crnet.info','imcd.jaxcx.com','www.mywhh.com','scofo.ofo.so','cfh.tianhongjijin.com.cn',
@@ -1503,7 +1529,7 @@ select '西瓜各个模块' model,
                 max(case when instr(urltag,'app_name=video_article')>0  and instr(urltag,'category=subv_sport')>0 then  1 else 0 end) tag19,
                 max(case when instr(urltag,'app_name=video_article')>0  and instr(urltag,'category=subv_car')>0 then  1 else 0 end) tag20
         from user_action_tag_d
-        where pt_days>='20190801' and pt_days<='20190831'
+        where pt_days>='20190901' and pt_days<='20190931'
         and  instr(url_host,'snssdk.com')>0
         and  instr(urltag,'app_name=video_article')>0
         group by pt_days,
@@ -1592,7 +1618,7 @@ from
                 max(case when url_host='upload.gifshow.com' then 1 else 0 end) tag13,
                 max(case when url_host='live.gifshow.com' and instr(urltag,'live/startPlay')>0 then 1 else 0 end) tag14
         from user_action_tag_d
-        where  pt_days>='20190801' and pt_days<='20190831'
+        where  pt_days>='20190901' and pt_days<='20190931'
           and  url_host in ('api.gifshow.com','upload.gifshow.com','live.gifshow.com')
         group by pt_days,
                 device_number,
@@ -1750,7 +1776,7 @@ from
                 max(case when url_host in ('hotsoon.snssdk.com','hotsoon-hl.snssdk.com') and instr(urltag,'hashtag')>0 then 1 else 0 end) tag27,
                 max(case when url_host in ('hotsoon.snssdk.com','hotsoon-hl.snssdk.com') and instr(urltag,'karaoke_hot_videos')>0 then 1 else 0 end) tag28
                 from user_action_tag_d
-                where  pt_days>='20190801' and pt_days<='20190831'
+                where  pt_days>='20190901' and pt_days<='20190931'
                  and  (instr(url_host,'.snssdk.com')>0 or instr(url_host,'.huoshan.com')>0)
                 group by pt_days,
                         device_number,
@@ -1768,4 +1794,4 @@ select '-- -- -*****************************************************************
 
 -- 各个host的数据统计
 select '白名单域名统计量' model,url_host,count(*) cnt,count(distinct device_number) dau
-from user_action_tag_d where  pt_days='20190822'  group by url_host;
+from user_action_tag_d where  pt_days='20190922'  group by url_host;

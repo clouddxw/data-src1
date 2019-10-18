@@ -164,23 +164,23 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                 //头条内容聚合
                 Dataset<Row> tt_con =  spark.sql( "  select pt_days,"+
                         "         device_number,"+
-                        "         concat_ws('$',collect_set(concat_ws(':',con1,con3))) tt_con,"+
+                        "         case when model in ('vd_qq','vd_youku') then concat_ws('$',collect_set(concat_ws(':',con1,con2,con3))) else  concat_ws('$',collect_set(concat_ws(':',con1,con3))) tt_con,"+
                         "         model  tx_con "+
                         "   from   "+ dataBase + "."+UnicomTable.USER_ACTION_CONTEXT_D +" a"+
                         "    where pt_days = '" + ptDays + "'" +
-                        "      and model in ('toutiao_article','tencent_news_article','tencent_news_video','toutiao_pull') "+
+                        "      and model in ('toutiao_article','tencent_news_article','tencent_news_video','toutiao_pull','vd_qq','vd_youku') "+
                         "      and length(trim(con1))>0"+
                         "    group by pt_days,device_number,model "+
                         "union all  "+
                         "select pt_days, "+
                         "       device_number, "+
-                        "	    concat_ws('$',collect_set(con1)) tt_con, "+
-                        "	    'ximalaya' tx_con "+
-                        "	 from  "+
-                        "	   (select pt_days, "+
-                        "	           device_number, "+
-                        "			   con1, "+
-                        "			   floor(cast(con5 as bigint)/180) ceil "+
+                        "        concat_ws('$',collect_set(con1)) tt_con, "+
+                        "        'ximalaya' tx_con "+
+                        "     from  "+
+                        "       (select pt_days, "+
+                        "               device_number, "+
+                        "               con1, "+
+                        "               floor(cast(con5 as bigint)/180) ceil "+
                         "   from   "+ dataBase + "."+UnicomTable.USER_ACTION_CONTEXT_D +" a"+
                         "    where pt_days = '" + ptDays + "'" +
                         "      and model = 'ximalaya' "+
@@ -256,32 +256,215 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                 public Dataset<Row> run() throws UnsupportedEncodingException {
                     Dataset<Row> tmpSampleBase = spark.sql(" select device_number," +
                             "         url_host," +
-                            "         url," +
+                            "         case when instr(url,'http://')<=0 then concat('http://',url) else url end url," +
                             "         ts as start_time, "+
                             "         hour(start_time) hh," +
-                            "         case   when a.url_host='news.ssp.qq.com' and  instr(url,'app')>0 then 'app' "+
-                            "                when a.url_host='p.l.qq.com' and instr(url,'Music')>0 then 'Music' "+
-                            "                when a.url_host='y.gtimg.cn' and instr(url,'music')>0 then 'music'  "+
-                            "                when url_host='track.uc.cn'  and instr(url,'book')>0  then 'book'  "+
-                            "                when url_host='iflow.uczzd.cn' and instr(url,'video')>0 then 'video'  "+
-                            "                when url_host in ('wmedia-track.uc.cn','m.uczzd.cn') and instr(url,'page=video')>0 then 'page=video' "+
-                            "                when url_host ='api.huoshan.com'  and  instr(url,'app_id=13')>0 then 'app_id=13'  "+
-                            "                when url_host ='sugs.m.sm.cn' and instr(url,'ucinput')>0 then 'ucinput' "+
-                            "                when url_host='navi-user.uc.cn' then concat_ws('&',regexp_extract(url,'(search)',1),regexp_extract(url,'(fiction)',1)) "+
-                            "                when url_host='api.iplay.163.com' then regexp_extract(url,'(livestream)',1) "+
-                            "                when instr(url_host,'.kugou.com')>0 then concat_ws('&',regexp_extract(url,'(vip_type=1)',1),regexp_extract(url,'(vip_type=6)',1),regexp_extract(url,'(isVip=1)',1),regexp_extract(url,'(personal_recommend)',1),regexp_extract(url,'(roomId)',1),regexp_extract(url,'(getEnterRoomInfo)',1),regexp_extract(url,'(ktv_room)',1),regexp_extract(url,'(liveroom)',1),regexp_extract(url,'(record.do)',1),regexp_extract(url,'(daily_focus)',1))  "+
-                            "                when instr(url_host,'.ximalaya.com')>0 then concat_ws('&',regexp_extract(url,'(vipStatus=1)',1),regexp_extract(url,'(vipStatus=2)',1),regexp_extract(url,'(vipStatus=3)',1),regexp_extract(url,'(vipCategory)',1),regexp_extract(url,'(recharge)',1),concat_ws('%',regexp_extract(url,'(positionName=focus)',1),regexp_extract(url,'(categoryId=-2)',1)),regexp_extract(url,'(AggregateRankListTabs)',1),regexp_extract(url,'(daily)',1),regexp_extract(url,'(sceneId=-{0,1}[0-9]+)',1),concat_ws('%',regexp_extract(url,'(recommends)',1),regexp_extract(url,'(categoryId=33)',1)),regexp_extract(url,'(topBuzz)',1),concat_ws('%',regexp_extract(url,'(vip)',1),regexp_extract(url,'(channel)',1),regexp_extract(url,'(categoryId=-8)',1)),regexp_extract(url,'(categoryId=-{0,1}[0-9]+)',1),regexp_extract(url,'(rankingListId=-{0,1}[0-9]+)',1),regexp_extract(url,'(sleep/theme)',1),regexp_extract(url,'(roomId=)',1)) "+
-                            "                when url_host in ('interface.music.163.com','interface3.music.163.com') then concat_ws('&',regexp_extract(url,'(enhance/download)',1),regexp_extract(url,'(comment)',1),regexp_extract(url,'(store)',1),regexp_extract(url,'(cloud/get)',1),regexp_extract(url,'(msg/private)',1),regexp_extract(url,'(user/comments)',1),regexp_extract(url,'(forwards)',1),regexp_extract(url,'(msg/notices)',1),regexp_extract(url,'(song/detail)',1),regexp_extract(url,'(comments/musiciansaid)',1),regexp_extract(url,'(getfollows)',1),regexp_extract(url,'(playlist/category)',1),regexp_extract(url,'(playlist/detail/dynamic)',1),regexp_extract(url,'(djradio)',1),regexp_extract(url,'(djradio/home/paygift)',1),regexp_extract(url,'(videotimeline)',1),regexp_extract(url,'(homepage)',1),regexp_extract(url,'(college/user/get)',1),regexp_extract(url,'(radio/get)',1),regexp_extract(url,'(sublist)',1),regexp_extract(url,'(my/radio)',1),regexp_extract(url,'(playlist/detail)',1),regexp_extract(url,'(mlivestream/entrance/playpage)',1),regexp_extract(url,'(songplay/entry)',1),regexp_extract(url,'(song/enhance/player)',1),regexp_extract(url,'(song/like)',1),regexp_extract(url,'(digitalAlbum/purchased)',1),regexp_extract(url,'(albumproduct/latest)',1),regexp_extract(url,'(new/albums)',1),regexp_extract(url,'(music/matcher)',1),regexp_extract(url,'(music/matcher/sing)',1),regexp_extract(url,'(play/mv)',1),regexp_extract(url,'(dailyTask)',1),regexp_extract(url,'(keyword)',1),regexp_extract(url,'(dailyrecommend)',1),regexp_extract(url,'(nearby)',1),regexp_extract(url,'(search/get)',1),regexp_extract(url,'(mlivestream)',1)) "+
-                            "                when instr(url_host,'.kuwo.cn')>0 then concat_ws('&',regexp_extract(url,'(fm/category)',1),regexp_extract(url,'(get_jm_info)',1),regexp_extract(url,'(fmradio)',1),regexp_extract(url,'(isVip=1)',1),regexp_extract(url,'(ptype=vip)',1)) "+
-                            "                when url_host='api.gifshow.com' then concat_ws('&',regexp_extract(url,'(feed/hot)',1),regexp_extract(url,'(feed/nearby)',1),regexp_extract(url,'(intown)',1),regexp_extract(url,'(myfollow)',1),regexp_extract(url,'(following)',1),regexp_extract(url,'(search)',1),regexp_extract(url,'(news/load)',1),regexp_extract(url,'(notify/load)',1),regexp_extract(url,'(message)',1),regexp_extract(url,'(comment/add)',1),regexp_extract(url,'(photo/like)',1),regexp_extract(url,'(share/sharePhoto)',1),regexp_extract(url,'(relation/follow)',1)) "+
-                            "                when instr(url_host,'.huoshan.com')>0 then concat_ws('&',regexp_extract(url,'(type=live)',1),regexp_extract(url,'(type=video)',1),regexp_extract(url,'(type=follow)',1),regexp_extract(url,'(room/enter)',1),concat_ws('%',regexp_extract(url,'(get_profile)',1),regexp_extract(url,'(to_user_id)',1)),regexp_extract(url,'(_follow)',1),regexp_extract(url,'(/ichat)',1),regexp_extract(url,'(_unfollow)',1),regexp_extract(url,'(wallet)',1),concat_ws('%',regexp_extract(url,'(_buy)',1),regexp_extract(url,'(way=[0-9]+)',1)),regexp_extract(url,'(type=city)',1),regexp_extract(url,'(type=find)',1)) "+
-                            "                when url_host='live.gifshow.com' and instr(url,'live/startPlay')>0 then 'live/startPlay' "+
-                            "                when url_host='t13img.yangkeduo.com' and  instr(url,'/cart/')>0 then 'cart' "+
-                            "                when url_host='pinduoduoimg.yangkeduo.com' and instr(url,'/promotion/')>0 then 'promotion' "+
-                            "                when url_host='t16img.yangkeduo.com' and instr(url,'/pdd_ims/')>0 then 'pdd_ims' "+
-                            "                when instr(url_host,'.snssdk.com')>0  then concat_ws('&',regexp_extract(url,'(app_name=.*?)&',1),regexp_extract(url,'(news/feed)',1),regexp_extract(url,'(article/information)',1),regexp_extract(url,'(keyword)',1),regexp_extract(url,'(category=.*?)&',1),regexp_extract(url,'(video/play)',1),regexp_extract(url,'(videolive)',1),regexp_extract(url,'(get_ugc_video)',1),regexp_extract(url,'(answer/detail)',1),regexp_extract(url,'(video/openapi)',1),regexp_extract(url,'(user/profile)',1),regexp_extract(url,'(ugc/repost/)',1),regexp_extract(url,'(video/app)',1),regexp_extract(url,'(vapp/action)',1),regexp_extract(url,'(vapp/danmaku)',1),regexp_extract(url,'(video/app/stream)',1),regexp_extract(url,'(tt_shortvideo)',1),concat_ws('%',regexp_extract(url,'(hotsoon)',1),regexp_extract(url,'(query)',1)),regexp_extract(url,'(type=.*?)&',1),regexp_extract(url,'(room/enter)',1),regexp_extract(url,'(share/link_command)',1),regexp_extract(url,'(share_way=.*?)&',1),regexp_extract(url,'(comments)',1),concat_ws('%',regexp_extract(url,'(get_profile)',1),regexp_extract(url,'(to_user_id)',1)),regexp_extract(url,'(_follow)',1),regexp_extract(url,'(/ichat)',1),regexp_extract(url,'(_unfollow)',1),regexp_extract(url,'(get_notice)',1),regexp_extract(url,'(wallet)',1),regexp_extract(url,'(payment_channels)',1),regexp_extract(url,'(hashtag)',1),regexp_extract(url,'(karaoke_hot_videos)',1),regexp_extract(url,'(action=.*?)&',1),regexp_extract(url,'(from_category=.*?)&',1)) "+
-                            "               else null " +
-                            "          end urltag," +
+                            "         'model3' data_model," +
+                            "         case when a.url_host='news.ssp.qq.com' and  instr(url,'app')>0 then 'app'      "+
+                            "              when a.url_host='p.l.qq.com' and instr(url,'Music')>0 then 'Music'      "+
+                            "              when a.url_host='y.gtimg.cn' and instr(url,'music')>0 then 'music'       "+
+                            "              when url_host='track.uc.cn'  and instr(url,'book')>0  then 'book'       "+
+                            "              when url_host='iflow.uczzd.cn' and instr(url,'video')>0 then 'video'       "+
+                            "              when url_host in ('wmedia-track.uc.cn','m.uczzd.cn') and instr(url,'page=video')>0 then 'page=video'      "+
+                            "              when url_host ='api.huoshan.com'  and  instr(url,'app_id=13')>0 then 'app_id=13'       "+
+                            "              when url_host ='sugs.m.sm.cn' and instr(url,'ucinput')>0 then 'ucinput'      "+
+                            "              when url_host='navi-user.uc.cn'  "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(search)',1), "+
+                            "                                  regexp_extract(url,'(fiction)',1) "+
+                            "                                )      "+
+                            "              when url_host='api.iplay.163.com' then regexp_extract(url,'(livestream)',1)      "+
+                            "              when instr(url_host,'.kugou.com')>0  "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(vip_type=1)',1), "+
+                            "                                  regexp_extract(url,'(vip_type=6)',1), "+
+                            "                                  regexp_extract(url,'(isVip=1)',1), "+
+                            "                                  regexp_extract(url,'(personal_recommend)',1), "+
+                            "                                  regexp_extract(url,'(roomId)',1), "+
+                            "                                  regexp_extract(url,'(getEnterRoomInfo)',1), "+
+                            "                                  regexp_extract(url,'(ktv_room)',1), "+
+                            "                                  regexp_extract(url,'(liveroom)',1), "+
+                            "                                  regexp_extract(url,'(record.do)',1), "+
+                            "                                  regexp_extract(url,'(daily_focus)',1) "+
+                            "                                )       "+
+                            "              when instr(url_host,'.ximalaya.com')>0  "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(vipStatus=1)',1), "+
+                            "                                  regexp_extract(url,'(vipStatus=2)',1), "+
+                            "                                  regexp_extract(url,'(vipStatus=3)',1), "+
+                            "                                  regexp_extract(url,'(vipCategory)',1), "+
+                            "                                  regexp_extract(url,'(recharge)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(positionName=focus)',1),regexp_extract(url,'(categoryId=-2)',1)), "+
+                            "                                  regexp_extract(url,'(AggregateRankListTabs)',1), "+
+                            "                                  regexp_extract(url,'(daily)',1), "+
+                            "                                  regexp_extract(url,'(sceneId=-{0,1}[0-9]+)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(recommends)',1),regexp_extract(url,'(categoryId=33)',1)), "+
+                            "                                  regexp_extract(url,'(topBuzz)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(vip)',1),regexp_extract(url,'(channel)',1),regexp_extract(url,'(categoryId=-8)',1)), "+
+                            "                                  regexp_extract(url,'(categoryId=-{0,1}[0-9]+)',1), "+
+                            "                                  regexp_extract(url,'(rankingListId=-{0,1}[0-9]+)',1), "+
+                            "                                  regexp_extract(url,'(sleep/theme)',1), "+
+                            "                                  regexp_extract(url,'(roomId=)',1) "+
+                            "                                )      "+
+                            "              when url_host like 'p%-xg.byteimg.com'       "+
+                            "                  then concat_ws('&',      "+
+                            "                                  regexp_extract(url,'(img/tos-cn)',1),      "+
+                            "                                  regexp_extract(url,'(img/pgc-image)',1),      "+
+                            "                                  regexp_extract(url,'(img/p1901)',1)      "+
+                            "                                )      "+
+                            "              when url_host like 'p%-xg.bytecdn.cn' then regexp_extract(url,'(large)',1)       "+
+                            "              when url_host like 'sf%-xgcdn-tos.pstatp.com'       "+
+                            "                  then concat_ws('&',      "+
+                            "                                  regexp_extract(url,'(web.business.image)',1),      "+
+                            "                                  regexp_extract(url,'(img/mosaic-legacy)',1),      "+
+                            "                                  regexp_extract(url,'(960x0)',1)      "+
+                            "                                )      "+
+                            "              when url_host='upload.gifshow.com' then regexp_extract(url,'(uploadCover)',1)      "+
+                            "              when url_host like 'p%-tt.byteimg.com' or url_host like 'sf%-ttcdn-tos.pstatp.com'      "+
+                            "                  then concat_ws('&',      "+
+                            "                                  regexp_extract(url,'img/pgc-image',0),      "+
+                            "                                  regexp_extract(url,'img/tos-cn',0),      "+
+                            "                                  regexp_extract(url,'web.business.image',0),      "+
+                            "                                  regexp_extract(url,'img/mosaic-legacy',0),      "+
+                            "                                  regexp_extract(url,'960x0',0),      "+
+                            "                                  regexp_extract(url,'from=shortvideo',0)      "+
+                            "                                )      "+
+                            "              when url_host in ('interface.music.163.com','interface3.music.163.com')       "+
+                            "                  then concat_ws('&',      "+
+                            "                                  regexp_extract(url,'(enhance/download)',1),      "+
+                            "                                  regexp_extract(url,'(comment)',1),      "+
+                            "                                  regexp_extract(url,'(store)',1),      "+
+                            "                                  regexp_extract(url,'(cloud/get)',1),      "+
+                            "                                  regexp_extract(url,'(msg/private)',1),      "+
+                            "                                  regexp_extract(url,'(user/comments)',1),      "+
+                            "                                  regexp_extract(url,'(forwards)',1),      "+
+                            "                                  regexp_extract(url,'(msg/notices)',1),      "+
+                            "                                  regexp_extract(url,'(song/detail)',1),      "+
+                            "                                  regexp_extract(url,'(comments/musiciansaid)',1),      "+
+                            "                                  regexp_extract(url,'(getfollows)',1),      "+
+                            "                                  regexp_extract(url,'(playlist/category)',1),      "+
+                            "                                  regexp_extract(url,'(playlist/detail/dynamic)',1),      "+
+                            "                                  regexp_extract(url,'(djradio)',1),      "+
+                            "                                  regexp_extract(url,'(djradio/home/paygift)',1),      "+
+                            "                                  regexp_extract(url,'(videotimeline)',1),      "+
+                            "                                  regexp_extract(url,'(homepage)',1),      "+
+                            "                                  regexp_extract(url,'(college/user/get)',1),      "+
+                            "                                  regexp_extract(url,'(radio/get)',1),      "+
+                            "                                  regexp_extract(url,'(sublist)',1),      "+
+                            "                                  regexp_extract(url,'(my/radio)',1),      "+
+                            "                                  regexp_extract(url,'(playlist/detail)',1),      "+
+                            "                                  regexp_extract(url,'(mlivestream/entrance/playpage)',1),      "+
+                            "                                  regexp_extract(url,'(songplay/entry)',1),      "+
+                            "                                  regexp_extract(url,'(song/enhance/player)',1),      "+
+                            "                                  regexp_extract(url,'(song/like)',1),      "+
+                            "                                  regexp_extract(url,'(digitalAlbum/purchased)',1),      "+
+                            "                                  regexp_extract(url,'(albumproduct/latest)',1),      "+
+                            "                                  regexp_extract(url,'(new/albums)',1),      "+
+                            "                                  regexp_extract(url,'(music/matcher)',1),      "+
+                            "                                  regexp_extract(url,'(music/matcher/sing)',1),      "+
+                            "                                  regexp_extract(url,'(play/mv)',1),      "+
+                            "                                  regexp_extract(url,'(dailyTask)',1),      "+
+                            "                                  regexp_extract(url,'(keyword)',1),      "+
+                            "                                  regexp_extract(url,'(dailyrecommend)',1),      "+
+                            "                                  regexp_extract(url,'(nearby)',1),      "+
+                            "                                  regexp_extract(url,'(search/get)',1),      "+
+                            "                                  regexp_extract(url,'(mlivestream)',1),      "+
+                            "                                  regexp_extract(url,'eapi',0),      "+
+                            "                                  regexp_extract(url,'monitor/impress',0),      "+
+                            "                                  regexp_extract(url,'usersafe/pl/count',0),      "+
+                            "                                  regexp_extract(url,'msg/private',0),      "+
+                            "                                  regexp_extract(url,'college/user/get',0),      "+
+                            "                                  regexp_extract(url,'happy/info',0),      "+
+                            "                                  regexp_extract(url,'forwards',0),      "+
+                            "                                  regexp_extract(url,'videotimeline',0),      "+
+                            "                                  regexp_extract(url,'homepage',0),      "+
+                            "                                  regexp_extract(url,'sublist',0),      "+
+                            "                                  regexp_extract(url,'my/radio',0),      "+
+                            "                                  regexp_extract(url,'song/enhance/privilege',0),      "+
+                            "                                  regexp_extract(url,'college/user/get',0),      "+
+                            "                                  regexp_extract(url,'nearby',0)      "+
+                            "                              )                                "+
+                            "              when instr(url_host,'.kuwo.cn')>0  "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(fm/category)',1), "+
+                            "                                  regexp_extract(url,'(get_jm_info)',1), "+
+                            "                                  regexp_extract(url,'(fmradio)',1), "+
+                            "                                  regexp_extract(url,'(isVip=1)',1), "+
+                            "                                  regexp_extract(url,'(ptype=vip)',1) "+
+                            "                                )      "+
+                            "              when url_host='api.gifshow.com'  "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(feed/hot)',1), "+
+                            "                                  regexp_extract(url,'(feed/nearby)',1), "+
+                            "                                  regexp_extract(url,'(intown)',1), "+
+                            "                                  regexp_extract(url,'(myfollow)',1), "+
+                            "                                  regexp_extract(url,'(following)',1), "+
+                            "                                  regexp_extract(url,'(search)',1), "+
+                            "                                  regexp_extract(url,'(news/load)',1), "+
+                            "                                  regexp_extract(url,'(notify/load)',1), "+
+                            "                                  regexp_extract(url,'(message)',1), "+
+                            "                                  regexp_extract(url,'(comment/add)',1), "+
+                            "                                  regexp_extract(url,'(photo/like)',1), "+
+                            "                                  regexp_extract(url,'(share/sharePhoto)',1), "+
+                            "                                  regexp_extract(url,'(relation/follow)',1) "+
+                            "                                )      "+
+                            "              when instr(url_host,'.huoshan.com')>0  "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(type=live)',1), "+
+                            "                                  regexp_extract(url,'(type=video)',1), "+
+                            "                                  regexp_extract(url,'(type=follow)',1), "+
+                            "                                  regexp_extract(url,'(room/enter)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(get_profile)',1),regexp_extract(url,'(to_user_id)',1)), "+
+                            "                                  regexp_extract(url,'(_follow)',1), "+
+                            "                                  regexp_extract(url,'(/ichat)',1), "+
+                            "                                  regexp_extract(url,'(_unfollow)',1), "+
+                            "                                  regexp_extract(url,'(wallet)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(_buy)',1),regexp_extract(url,'(way=[0-9]+)',1)),regexp_extract(url,'(type=city)',1), "+
+                            "                                  regexp_extract(url,'(type=find)',1) "+
+                            "                                )      "+
+                            "              when url_host='live.gifshow.com' and instr(url,'live/startPlay')>0 then 'live/startPlay'      "+
+                            "              when url_host='t13img.yangkeduo.com' and  instr(url,'/cart/')>0 then 'cart'      "+
+                            "              when url_host='pinduoduoimg.yangkeduo.com' and instr(url,'/promotion/')>0 then 'promotion'      "+
+                            "              when url_host='t16img.yangkeduo.com' and instr(url,'/pdd_ims/')>0 then 'pdd_ims'      "+
+                            "              when instr(url_host,'.snssdk.com')>0   "+
+                            "                  then concat_ws('&', "+
+                            "                                  regexp_extract(url,'(app_name=.*?)&',1), "+
+                            "                                  regexp_extract(url,'(news/feed)',1), "+
+                            "                                  regexp_extract(url,'(article/information)',1), "+
+                            "                                  regexp_extract(url,'(keyword)',1), "+
+                            "                                  regexp_extract(url,'(category=.*?)&',1), "+
+                            "                                  regexp_extract(url,'(video/play)',1), "+
+                            "                                  regexp_extract(url,'(videolive)',1), "+
+                            "                                  regexp_extract(url,'(get_ugc_video)',1), "+
+                            "                                  regexp_extract(url,'(answer/detail)',1), "+
+                            "                                  regexp_extract(url,'(video/openapi)',1), "+
+                            "                                  regexp_extract(url,'(user/profile)',1), "+
+                            "                                  regexp_extract(url,'(ugc/repost/)',1), "+
+                            "                                  regexp_extract(url,'(video/app)',1), "+
+                            "                                  regexp_extract(url,'(vapp/action)',1), "+
+                            "                                  regexp_extract(url,'(vapp/danmaku)',1), "+
+                            "                                  regexp_extract(url,'(video/app/stream)',1), "+
+                            "                                  regexp_extract(url,'(tt_shortvideo)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(hotsoon)',1),regexp_extract(url,'(query)',1)), "+
+                            "                                  regexp_extract(url,'(type=.*?)&',1), "+
+                            "                                  regexp_extract(url,'(room/enter)',1), "+
+                            "                                  regexp_extract(url,'(share/link_command)',1), "+
+                            "                                  regexp_extract(url,'(share_way=.*?)&',1), "+
+                            "                                  regexp_extract(url,'(comments)',1), "+
+                            "                                  concat_ws('%',regexp_extract(url,'(get_profile)',1),regexp_extract(url,'(to_user_id)',1)), "+
+                            "                                  regexp_extract(url,'(_follow)',1), "+
+                            "                                  regexp_extract(url,'(/ichat)',1), "+
+                            "                                  regexp_extract(url,'(_unfollow)',1), "+
+                            "                                  regexp_extract(url,'(get_notice)',1), "+
+                            "                                  regexp_extract(url,'(wallet)',1), "+
+                            "                                  regexp_extract(url,'(payment_channels)',1), "+
+                            "                                  regexp_extract(url,'(hashtag)',1), "+
+                            "                                  regexp_extract(url,'(karaoke_hot_videos)',1), "+
+                            "                                  regexp_extract(url,'(action=.*?)&',1), "+
+                            "                                  regexp_extract(url,'(from_category=.*?)&',1) "+
+                            "                                )      "+
+                            "             else null       "+
+                            "          end urltag,         "+
                             "          pt_days,prov_id" +
                             "          from " + dataBase + "."+UnicomTable.BIGFLOW_ORIGIN_SAMPLE_BASE+" a" +
                             " where prov_id = '" + provId + "' " +
@@ -295,7 +478,69 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                             "                  or instr(a.url_host,'kuwo.cn')>0" +
                             "                  or instr(a.url_host,'snssdk.com')>0" +
                             "                  or instr(a.url_host,'ximalaya.com')>0 "+
-                            "                  or a.url_host like 'a%.bytecdn.cn') "
+                            "                  or a.url_host like 'a%.bytecdn.cn') "+
+                            "union all"+
+                            "select   device_number," +
+                            "         url_host," +
+                            "         case when instr(url,'http://')<=0 then concat('http://',url) else url end url," +
+                            "         ts as start_time, "+
+                            "         hour(start_time) hh," +
+                            "         'model2' data_model," +
+                            "         null urltag," +
+                            "         pt_days,prov_id" +
+                            "         from " + dataBase + "."+UnicomTable.ORIGIN_SAMPLE_BASE+" a" +
+                            " where prov_id = '" + provId + "' " +
+                            " and pt_days = '" + ptDays + "'" +
+                            " and ( (url like 'http://live%.l.qq.com/livemsg%' and lower(coalesce(parse_url(url,'QUERY','channelId'),'')) not like 'news%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%sport%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%news%') " +
+                            "   or ( url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%sports%') " +
+                            "   or ( url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%news%') " +
+                            "   or ( url like 'http://live%.l.qq.com/livemsg%' and parse_url(url,'QUERY','channelId') like 'news%') " +
+                            "   or ( (url like 'http://btrace.qq.com/kvcollect%' and parse_url(url,'QUERY','step') in ('3','6') and user_agent like '%MicroMessenger%')) " +
+                            "   or ( url like 'http://vv.video.qq.com/getvbkey%' and user_agent like '%QQSports%') " +
+                            "   or ( url like 'http://live%.l.aiseet.atianqi.com/livemsg%') " +
+                            "   or ( url like 'http://live%.l.cp81.ott.cibntv.net/livemsg%') " +
+                            "   or ( url like 'http://live%.l.ott.video.qq.com/livemsg%') " +
+                            "   or ( url like 'http://live%.l.t002.ottcn.com/livemsg?%') " +
+                            "   or ( url like 'http://tv.t002.ottcn.com/i-tvbin/qtv_video/video_recommend/exit_recommend?%') " +
+                            "   or ( url_host='tv.cp81.ott.cibntv.net') " +
+                            "   or ( url_host='btrace.play.cp81.ott.cibntv.net') " +
+                            "   or ( url like 'http://vv.video.qq.com%' and user_agent not like '%QQSports%') " +
+                            "   or ( url like 'http://info.zb.video.qq.com/?%') " +
+                            "   or ( url like 'http://tv.aiseet.atianqi.com/i-tvbin/qtv_video/get_lookhim?%') " +
+                            "   or ( url like 'http://vv.play.aiseet.atianqi.com/getvinfo%') " +
+                            "   or ( url like 'http://pingfore.qq.com/pingd?dm=v.qq.com%') " +
+                            "   or ( url like 'http://pingfore.qq.com/pingd?dm=pgv.live.qq.com&url=/txv/cover/%') " +
+                            "   or ( url like 'http://pingfore.qq.com/pingd?dm=v.qq.com&url=/x/cover/%') " +
+                            "   or ( url like 'http://bullet.video.qq.com/fcgi-bin/target/regist?%') " +
+                            "   or ( url like 'http://btrace.qq.com/kvcollect%') " +
+                            "   or ( url like 'http://btrace.video.qq.com%') " +
+                            "   or ( url like 'http://pay.video.qq.com%') " +
+                            "   or ( url like 'http://v.qq.com%') " +
+                            "   or ( url_host='ups.youku.com' and url like 'http://ups.youku.com/ups/get.json%') " +
+                            "   or ( url like 'http://api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://api.mobile.youku.com/layout/ipad%/play/detail%' or url like 'http://api.mobile.youku.com/layout/android%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/android%/play/detail%') " +
+                            "   or ( url_host='api.mobile.youku.com' and url like 'http://api.mobile.youku.com/player/audio/switch%') " +
+                            "   or ( url_host='das.api.mobile.youku.com' and url like 'http://das.api.mobile.youku.com/show/relation/%') " +
+                            "   or ( url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','vid'))>2) " +
+                            "   or ( url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','v'))>2) " +
+                            "   or ( url_host in('val.atm.youku.com') and length(parse_url(url,'QUERY','v'))>2) " +
+                            "   or ( url_host in('v.youku.com','val.atm.youku.com' ,'ykrec.youku.com','vip.youku.com') and length(parse_url(url,'QUERY','vid'))>2) " +
+                            "   or ( url_host in ('cmstool.youku.com')) " +
+                            "   or ( url_host='v.youku.com' and url like 'http://v.youku.com/v_show/id_%') " +
+                            "   or ( url_host='playlog.youku.com') " +
+                            "   or ( url_host='vali.cp31.ott.cibntv.net') " +
+                            "   or ( url like 'http://cibn.api.3g.cp31.ott.cibntv.net/%/common/h265/play%') " +
+                            "   or ( url like 'http://tv.api.3g.youku.com/%/common/h265/play%' or url like 'http://tv.api.3g.youku.com/adv%') " +
+                            "   or ( url like 'http://cibn.api.3g.cp31.ott.cibntv.net/player/cpplayinfo?%') " +
+                            "   or ( url like 'http://ups.cp31.ott.cibntv.net/ups/get.json?%') " +
+                            "   or ( url like 'http://pl.cp12.wasu.tv/playlist/m3u8?%') " +
+                            "   or ( url like 'http://val.atm.cp31.ott.cibntv.net/show?%') " +
+                            "   or ( url like 'http://statis.api.3g.youku.com/openapi-wireless/statis/vv%') " +
+                            "   or ( url_host='vali-dns.cp31.ott.cibntv.net') " +
+                            "   or ( url like 'http://gm.mmstat.com/yt/preclk%' and parse_url(url,'QUERY','turl') like '%show%') " +
+                            "   or ( url like 'http://m.atm.youku.com/dot/video?%' and parse_url(url,'QUERY','os')='ios') " +
+                            "   or ( url like 'http://v2html.atm.youku.com/vhtml?%' ) " +
+                            " ) "
+
                     );
                     tmpSampleBase.cache().createOrReplaceTempView("tmpsamplebase");
 
@@ -307,6 +552,7 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
                             "    prov_id, " +
                             "    url_host " +
                             "from tmpsamplebase " +
+                            "where data_model='model3' " +
                             "group by device_number," +
                             "        urltag," +
                             "        pt_days," +
@@ -325,56 +571,246 @@ public class RouteUnicomActionTagAnalyzer extends SparkAnalyzer implements Seria
         runSparkJob(new CommonSparkJob(spark, logger, dropPartitionType, dataBase, UnicomTable.USER_ACTION_CONTEXT_D, null, ptDays, null, provId) {
             public Dataset<Row> run() throws UnsupportedEncodingException {
 
-                Dataset<Row> contextDay = spark.sql("select  device_number, "+
-                        "        case    when instr(url_host,'inews.qq.com')>0  then regexp_extract(url,'(&id=)(.*?)&',2) "+
-                        "                when url_host='p.ssp.qq.com'   then regexp_extract(url,'(&article_id=)(.*?)&',2) "+
-                        "                when url_host='lives.l.qq.com'   then regexp_extract(url,'(&articleId=)(.*?)&',2) "+
-                        "                when (instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' ) then regexp_extract(url,'(&item_id=)(.*?)&',2) "+
-                        "                when ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) then split(url,'/')[7] "+
-                        "                when (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 )  then reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'(&keyword=)(.*?)&',2), 'UTF-8') "+
-                        "                when  (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) then reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'(singerAndSong=)(.*?)&',2), 'UTF-8') "+
-                        "                when  url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then regexp_replace(regexp_extract(url,'/([goods/images|cart|promotion]+?/[0-9\\-]+?/.+?)\\\\.[jpg|png|jpeg]',1),'goods/images','goods%images') "+
-                        "                when url_host in ('mobwsa.ximalaya.com','mobile.ximalaya.com') then regexp_extract(url,'(albumId=)(.*?)&',2)  "+
-                        "                when url_host = 'adse.wsa.ximalaya.com' then regexp_extract(url,'(album=)(.*?)&',2) "+
-                        "                else null  "+
-                        "        end con1, "+
-                        "        case    when instr(url_host,'inews.qq.com')>0 then substr(regexp_extract(url,'(&id=)(.*?)&',2),0,3)  "+
-                        "                when url_host='p.ssp.qq.com'  then substr(regexp_extract(url,'(&article_id=)(.*?)&',2),0,3) "+
-                        "                when url_host='lives.l.qq.com'  then substr(regexp_extract(url,'(&articleId=)(.*?)&',2),0,3) "+
-                        "                when ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) then split(url,'/')[8] "+
-                        "                else null  "+
-                        "        end con2, "+
-                        "        case    when instr(url_host,'inews.qq.com')>0 then regexp_extract(url,'(&chlid=)(.*?)&',2) "+
-                        "                when url_host='p.ssp.qq.com'  then regexp_extract(url,'(&channel=)(.*?)&',2) "+
-                        "                when url_host='lives.l.qq.com'  then regexp_extract(url,'(&channelId=)(.*?)&',2)  "+
-                        "                when (instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' )  then regexp_extract(url,'(&from_category=)(.*?)&',2) "+
-                        "                when (instr(url_host,'snssdk.com')>0 and  instr(url,'news/feed')>0 )  then regexp_extract(url,'(&category=)(.*?)&',2) "+
-                        "                else null  "+
-                        "        end con3, "+
-                        "        case when instr(url_host,'inews.qq.com')>0 then regexp_extract(url,'(&pagestartFrom=)(.*?)&',2)  "+
-                        "             when ( instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' )  then regexp_extract(url,'(&from=)(.*?)&',2) "+
-                        "                else null  "+
-                        "        end con4, "+
-                        "        case when url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') then start_time else '' end con5,pt_days, "+
-                        "        case when instr(url_host,'inews.qq.com')>0 or url_host ='p.ssp.qq.com' then 'tencent_news_article' "+
-                        "                when url_host = 'lives.l.qq.com' then 'tencent_news_video' "+
-                        "                when instr(url_host,'snssdk.com')>0  then 'toutiao_article' "+
-                        "                when (url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and url like '%/article/content/%' then  'toutiao_pull' "+
-                        "                when (instr(url_host,'snssdk.com')>0 and  instr(url,'news/feed')>0 )  then 'toutiao_catgory' "+
-                        "                when url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then 'pdd' "+
-                        "                when url_host in ('krcs.kugou.com','bjacshow.kugou.com') then 'kugou' "+
-                        "                when url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') then 'ximalaya' "+
-                        "        end model,prov_id  "+
-                        "    from tmpsamplebase  "+
-                        "where   ( instr(url_host,'inews.qq.com')>0  and (( instr(url,'getSimpleNews')>0 and (instr(url,'&id=')>0 or instr(url,'&child=')>0 or instr(url,'&pagestartFrom')>0) ) or  ( instr(url,'getNewsRelateModule')>0  and (instr(url,'&id=')>0 or instr(url,'&child=')>0 or instr(url,'&pagestartFrom')>0) ))) "+
-                        "        or (url_host='p.ssp.qq.com' and  (instr(url,'&article_id=')>0 or instr(url,'&channel=')>0)) "+
-                        "        or (url_host='lives.l.qq.com' and (instr(url,'&articleId=')>0 and instr(url,'&channelId=')>0)) "+
-                        "        or (instr(url_host,'snssdk.com')>0 and (url like '%article/information%app_name=news_article%' or instr(url,'news/feed')>0) ) "+
-                        "        or (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 ) "+
-                        "        or ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) "+
-                        "        or (url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') and (instr(url,'albumId=')>0 or instr(url,'album=')>0) ) "+
-                        "        or (url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') and (instr(url,'goods/images')>0 or instr(url,'cart')>0 or instr(url,'promotion')>0)) "+
-                        "        or (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) ");
+                Dataset<Row> contextDay = spark.sql("select  device_number,  " +
+                        "        case    when instr(url_host,'inews.qq.com')>0  then regexp_extract(url,'(&id=)(.*?)&',2)  " +
+                        "                when url_host='p.ssp.qq.com'   then regexp_extract(url,'(&article_id=)(.*?)&',2)  " +
+                        "                when url_host='lives.l.qq.com'   then regexp_extract(url,'(&articleId=)(.*?)&',2)  " +
+                        "                when (instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' ) then regexp_extract(url,'(&item_id=)(.*?)&',2)  " +
+                        "                when ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) then split(url,'/')[7]  " +
+                        "                when (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 )  then reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'(&keyword=)(.*?)&',2), 'UTF-8')  " +
+                        "                when  (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) then reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'(singerAndSong=)(.*?)&',2), 'UTF-8')  " +
+                        "                when  url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then regexp_replace(regexp_extract(url,'/([goods/images|cart|promotion]+?/[0-9\\-]+?/.+?)\\\\.[jpg|png|jpeg]',1),'goods/images','goods%images')  " +
+                        "                when url_host in ('mobwsa.ximalaya.com','mobile.ximalaya.com') then regexp_extract(url,'(albumId=)(.*?)&',2)   " +
+                        "                when url_host = 'adse.wsa.ximalaya.com' then regexp_extract(url,'(album=)(.*?)&',2)  " +
+                        "        when    (url like 'http://live%.l.qq.com/livemsg%' and lower(coalesce(parse_url(url,'QUERY','channelId'),'')) not like 'news%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%sport%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%news%')    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%sports%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%news%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and parse_url(url,'QUERY','channelId') like 'news%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    (url like 'http://btrace.qq.com/kvcollect%' and parse_url(url,'QUERY','step') in ('3','6') and user_agent like '%MicroMessenger%')    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://vv.video.qq.com/getvbkey%' and user_agent like '%QQSports%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.aiseet.atianqi.com/livemsg%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.cp81.ott.cibntv.net/livemsg%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.ott.video.qq.com/livemsg%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://live%.l.t002.ottcn.com/livemsg?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://tv.t002.ottcn.com/i-tvbin/qtv_video/video_recommend/exit_recommend?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url_host='tv.cp81.ott.cibntv.net'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vids') , 'UTF-8') " +
+                        "        when    url_host='btrace.play.cp81.ott.cibntv.net'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://vv.video.qq.com%' and user_agent not like '%QQSports%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://info.zb.video.qq.com/?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','livepid') , 'UTF-8')  " +
+                        "        when    url like 'http://tv.aiseet.atianqi.com/i-tvbin/qtv_video/get_lookhim?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://vv.play.aiseet.atianqi.com/getvinfo%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com%'    then    concat('qq20_',reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'cover/(.*?)/index\\.html',1) , 'UTF-8'))  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=pgv.live.qq.com&url=/txv/cover/%'    then    reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'/([0-9a-zA-Z]+)\\.html&rand=',1) , 'UTF-8')  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com&url=/x/cover/%'    then    reflect('java.net.URLDecoder', 'decode', regexp_extract(url,'/([0-9a-zA-Z]+)\\.html&rdm=',1) , 'UTF-8')  " +
+                        "        when    url like 'http://bullet.video.qq.com/fcgi-bin/target/regist?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://btrace.qq.com/kvcollect%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://btrace.video.qq.com%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','mvid') , 'UTF-8') " +
+                        "        when    url_host='ups.youku.com' and url like 'http://ups.youku.com/ups/get.json%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://api.mobile.youku.com/layout/ipad%/play/detail%' or url like 'http://api.mobile.youku.com/layout/android%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/android%/play/detail%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','id') , 'UTF-8') " +
+                        "        when    url_host='api.mobile.youku.com' and url like 'http://api.mobile.youku.com/player/audio/switch%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url_host='das.api.mobile.youku.com' and url like 'http://das.api.mobile.youku.com/show/relation/%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','vid'))>2    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','v'))>2    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','v') , 'UTF-8') " +
+                        "        when    url_host in('val.atm.youku.com') and length(parse_url(url,'QUERY','v'))>2    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','v') , 'UTF-8') " +
+                        "        when    url_host in('v.youku.com','val.atm.youku.com' ,'ykrec.youku.com','vip.youku.com') and length(parse_url(url,'QUERY','vid'))>2    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url_host in ('cmstool.youku.com')    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','videoid') , 'UTF-8') " +
+                        "        when    url_host='playlog.youku.com'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','v') , 'UTF-8') " +
+                        "        when    url_host='vali.cp31.ott.cibntv.net'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/%/common/h265/play%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','id') , 'UTF-8') " +
+                        "        when    url like 'http://tv.api.3g.youku.com/%/common/h265/play%' or url like 'http://tv.api.3g.youku.com/adv%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','id') , 'UTF-8') " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/player/cpplayinfo?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://ups.cp31.ott.cibntv.net/ups/get.json?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://pl.cp12.wasu.tv/playlist/m3u8?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://val.atm.cp31.ott.cibntv.net/show?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','v') , 'UTF-8') " +
+                        "        when    url like 'http://statis.api.3g.youku.com/openapi-wireless/statis/vv%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','id') , 'UTF-8') " +
+                        "        when    url_host='vali-dns.cp31.ott.cibntv.net'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','vid') , 'UTF-8')  " +
+                        "        when    url like 'http://gm.mmstat.com/yt/preclk%' and parse_url(url,'QUERY','turl') like '%show%'    then    reflect('java.net.URLDecoder', 'decode', split(split(parse_url(url,'QUERY','turl'),'id_')[1],'\\.')[0] , 'UTF-8') " +
+                        "        when    url like 'http://m.atm.youku.com/dot/video?%' and parse_url(url,'QUERY','os')='ios'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','v') , 'UTF-8') " +
+                        "        when    url like 'http://v2html.atm.youku.com/vhtml?%'    then    reflect('java.net.URLDecoder', 'decode', parse_url(url,'QUERY','v') , 'UTF-8') " +
+                        "                else null   " +
+                        "        end con1,  " +
+                        "        case    when instr(url_host,'inews.qq.com')>0 then substr(regexp_extract(url,'(&id=)(.*?)&',2),0,3)   " +
+                        "                when url_host='p.ssp.qq.com'  then substr(regexp_extract(url,'(&article_id=)(.*?)&',2),0,3)  " +
+                        "                when url_host='lives.l.qq.com'  then substr(regexp_extract(url,'(&articleId=)(.*?)&',2),0,3)  " +
+                        "                when ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 ) then split(url,'/')[8]  " +
+                        "        when    (url like 'http://live%.l.qq.com/livemsg%' and lower(coalesce(parse_url(url,'QUERY','channelId'),'')) not like 'news%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%sport%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%news%')    then    'qq'  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%sports%'    then    'qq_sport'  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%news%'    then    'qq_news'  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and parse_url(url,'QUERY','channelId') like 'news%'    then    'qq_news'  " +
+                        "        when    (url like 'http://btrace.qq.com/kvcollect%' and parse_url(url,'QUERY','step') in ('3','6') and user_agent like '%MicroMessenger%')    then    'qq_weixin'  " +
+                        "        when    url like 'http://vv.video.qq.com/getvbkey%' and user_agent like '%QQSports%'    then    'qq_sport'  " +
+                        "        when    url like 'http://live%.l.aiseet.atianqi.com/livemsg%'    then    'qq'  " +
+                        "        when    url like 'http://live%.l.cp81.ott.cibntv.net/livemsg%'    then    'qq'  " +
+                        "        when    url like 'http://live%.l.ott.video.qq.com/livemsg%'    then    'qq'  " +
+                        "        when    url like 'http://live%.l.t002.ottcn.com/livemsg?%'    then    'qq'  " +
+                        "        when    url like 'http://tv.t002.ottcn.com/i-tvbin/qtv_video/video_recommend/exit_recommend?%'    then    'qq'  " +
+                        "        when    url_host='tv.cp81.ott.cibntv.net'    then    'qq'  " +
+                        "        when    url_host='btrace.play.cp81.ott.cibntv.net'    then    'qq'  " +
+                        "        when    url like 'http://vv.video.qq.com%' and user_agent not like '%QQSports%'    then    'qq'  " +
+                        "        when    url like 'http://info.zb.video.qq.com/?%'    then    'qq'  " +
+                        "        when    url like 'http://tv.aiseet.atianqi.com/i-tvbin/qtv_video/get_lookhim?%'    then    'qq'  " +
+                        "        when    url like 'http://vv.play.aiseet.atianqi.com/getvinfo%'    then    'qq'  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com%'    then    'qq'  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=pgv.live.qq.com&url=/txv/cover/%'    then    'qq'  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com&url=/x/cover/%'    then    'qq'  " +
+                        "        when    url like 'http://bullet.video.qq.com/fcgi-bin/target/regist?%'    then    'qq'  " +
+                        "        when    url like 'http://btrace.qq.com/kvcollect%'    then    'qq'  " +
+                        "        when    url like 'http://btrace.video.qq.com%'    then    'qq'  " +
+                        "        when    url like 'http://pay.video.qq.com%'    then    'qq'  " +
+                        "        when    url like 'http://v.qq.com%'    then    'qq'  " +
+                        "        when    url_host='ups.youku.com' and url like 'http://ups.youku.com/ups/get.json%'    then    'youku'  " +
+                        "        when    url like 'http://api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://api.mobile.youku.com/layout/ipad%/play/detail%' or url like 'http://api.mobile.youku.com/layout/android%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/android%/play/detail%'    then    'youku'  " +
+                        "        when    url_host='api.mobile.youku.com' and url like 'http://api.mobile.youku.com/player/audio/switch%'    then    'youku'  " +
+                        "        when    url_host='das.api.mobile.youku.com' and url like 'http://das.api.mobile.youku.com/show/relation/%'    then    'youku'  " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','vid'))>2    then    'youku'  " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','v'))>2    then    'youku'  " +
+                        "        when    url_host in('val.atm.youku.com') and length(parse_url(url,'QUERY','v'))>2    then    'youku'  " +
+                        "        when    url_host in('v.youku.com','val.atm.youku.com' ,'ykrec.youku.com','vip.youku.com') and length(parse_url(url,'QUERY','vid'))>2    then    'youku'  " +
+                        "        when    url_host in ('cmstool.youku.com')    then    'youku'  " +
+                        "        when    url_host='v.youku.com' and url like 'http://v.youku.com/v_show/id_%'    then    'youku'  " +
+                        "        when    url_host='playlog.youku.com'    then    'youku'  " +
+                        "        when    url_host='vali.cp31.ott.cibntv.net'    then    'youku'  " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/%/common/h265/play%'    then    'youku'  " +
+                        "        when    url like 'http://tv.api.3g.youku.com/%/common/h265/play%' or url like 'http://tv.api.3g.youku.com/adv%'    then    'youku'  " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/player/cpplayinfo?%'    then    'youku'  " +
+                        "        when    url like 'http://ups.cp31.ott.cibntv.net/ups/get.json?%'    then    'youku'  " +
+                        "        when    url like 'http://pl.cp12.wasu.tv/playlist/m3u8?%'    then    'youku'  " +
+                        "        when    url like 'http://val.atm.cp31.ott.cibntv.net/show?%'    then    'youku'  " +
+                        "        when    url like 'http://statis.api.3g.youku.com/openapi-wireless/statis/vv%'    then    'youku'  " +
+                        "        when    url_host='vali-dns.cp31.ott.cibntv.net'    then    'youku'  " +
+                        "        when    url like 'http://gm.mmstat.com/yt/preclk%' and parse_url(url,'QUERY','turl') like '%show%'    then    'youku'  " +
+                        "        when    url like 'http://m.atm.youku.com/dot/video?%' and parse_url(url,'QUERY','os')='ios'    then    'youku'  " +
+                        "        when    url like 'http://v2html.atm.youku.com/vhtml?%'    then    'youku'  " +
+                        "                else null   " +
+                        "        end con2,  " +
+                        "        case    when instr(url_host,'inews.qq.com')>0 then regexp_extract(url,'(&chlid=)(.*?)&',2)  " +
+                        "                when url_host='p.ssp.qq.com'  then regexp_extract(url,'(&channel=)(.*?)&',2)  " +
+                        "                when url_host='lives.l.qq.com'  then regexp_extract(url,'(&channelId=)(.*?)&',2)   " +
+                        "                when (instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' )  then regexp_extract(url,'(&from_category=)(.*?)&',2)  " +
+                        "                when (instr(url_host,'snssdk.com')>0 and  instr(url,'news/feed')>0 )  then regexp_extract(url,'(&category=)(.*?)&',2)  " +
+                        "        when    (url like 'http://live%.l.qq.com/livemsg%' and lower(coalesce(parse_url(url,'QUERY','channelId'),'')) not like 'news%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%sport%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%news%')    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%sports%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%news%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and parse_url(url,'QUERY','channelId') like 'news%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    (url like 'http://btrace.qq.com/kvcollect%' and parse_url(url,'QUERY','step') in ('3','6') and user_agent like '%MicroMessenger%')    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://vv.video.qq.com/getvbkey%' and user_agent like '%QQSports%'    then    'App'  " +
+                        "        when    url like 'http://live%.l.aiseet.atianqi.com/livemsg%'    then    'App'  " +
+                        "        when    url like 'http://live%.l.cp81.ott.cibntv.net/livemsg%'    then    'App'  " +
+                        "        when    url like 'http://live%.l.ott.video.qq.com/livemsg%'    then    'App'  " +
+                        "        when    url like 'http://live%.l.t002.ottcn.com/livemsg?%'    then    'App'  " +
+                        "        when    url like 'http://tv.t002.ottcn.com/i-tvbin/qtv_video/video_recommend/exit_recommend?%'    then    'App'  " +
+                        "        when    url_host='tv.cp81.ott.cibntv.net'    then    'App'  " +
+                        "        when    url_host='btrace.play.cp81.ott.cibntv.net'    then    'App'  " +
+                        "        when    url like 'http://vv.video.qq.com%' and user_agent not like '%QQSports%'    then    'App'  " +
+                        "        when    url like 'http://info.zb.video.qq.com/?%'    then    'App'  " +
+                        "        when    url like 'http://tv.aiseet.atianqi.com/i-tvbin/qtv_video/get_lookhim?%'    then    'App'  " +
+                        "        when    url like 'http://vv.play.aiseet.atianqi.com/getvinfo%'    then    'App'  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=pgv.live.qq.com&url=/txv/cover/%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com&url=/x/cover/%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://bullet.video.qq.com/fcgi-bin/target/regist?%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://btrace.qq.com/kvcollect%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://btrace.video.qq.com%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://pay.video.qq.com%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://v.qq.com%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='ups.youku.com' and url like 'http://ups.youku.com/ups/get.json%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://api.mobile.youku.com/layout/ipad%/play/detail%' or url like 'http://api.mobile.youku.com/layout/android%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/android%/play/detail%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='api.mobile.youku.com' and url like 'http://api.mobile.youku.com/player/audio/switch%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='das.api.mobile.youku.com' and url like 'http://das.api.mobile.youku.com/show/relation/%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','vid'))>2    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','v'))>2    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host in('val.atm.youku.com') and length(parse_url(url,'QUERY','v'))>2    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host in('v.youku.com','val.atm.youku.com' ,'ykrec.youku.com','vip.youku.com') and length(parse_url(url,'QUERY','vid'))>2    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host in ('cmstool.youku.com')    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='v.youku.com' and url like 'http://v.youku.com/v_show/id_%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='playlog.youku.com'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url_host='vali.cp31.ott.cibntv.net'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/%/common/h265/play%'    then    'App'  " +
+                        "        when    url like 'http://tv.api.3g.youku.com/%/common/h265/play%' or url like 'http://tv.api.3g.youku.com/adv%'    then    'App'  " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/player/cpplayinfo?%'    then    'App'  " +
+                        "        when    url like 'http://ups.cp31.ott.cibntv.net/ups/get.json?%'    then    'App'  " +
+                        "        when    url like 'http://pl.cp12.wasu.tv/playlist/m3u8?%'    then    'App'  " +
+                        "        when    url like 'http://val.atm.cp31.ott.cibntv.net/show?%'    then    'App'  " +
+                        "        when    url like 'http://statis.api.3g.youku.com/openapi-wireless/statis/vv%'    then    'App'  " +
+                        "        when    url_host='vali-dns.cp31.ott.cibntv.net'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://gm.mmstat.com/yt/preclk%' and parse_url(url,'QUERY','turl') like '%show%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://m.atm.youku.com/dot/video?%' and parse_url(url,'QUERY','os')='ios'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "        when    url like 'http://v2html.atm.youku.com/vhtml?%'    then    (case when user_agent like '%Mozilla%' then 'Web' else 'App' end)  " +
+                        "                else null   " +
+                        "        end con3,  " +
+                        "        case when instr(url_host,'inews.qq.com')>0 then regexp_extract(url,'(&pagestartFrom=)(.*?)&',2)   " +
+                        "             when ( instr(url_host,'snssdk.com')>0 and  url like '%article/information%app_name=news_article%' )  then regexp_extract(url,'(&from=)(.*?)&',2)  " +
+                        "                else null   " +
+                        "        end con4,  " +
+                        "        case when url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') then start_time else '' end con5,pt_days,  " +
+                        "        case when instr(url_host,'inews.qq.com')>0 or url_host ='p.ssp.qq.com' then 'tencent_news_article'  " +
+                        "                when url_host = 'lives.l.qq.com' then 'tencent_news_video'  " +
+                        "                when instr(url_host,'snssdk.com')>0  then 'toutiao_article'  " +
+                        "                when (url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and url like '%/article/content/%' then  'toutiao_pull'  " +
+                        "                when (instr(url_host,'snssdk.com')>0 and  instr(url,'news/feed')>0 )  then 'toutiao_catgory'  " +
+                        "                when url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') then 'pdd'  " +
+                        "                when url_host in ('krcs.kugou.com','bjacshow.kugou.com') then 'kugou'  " +
+                        "        when    (url like 'http://live%.l.qq.com/livemsg%' and lower(coalesce(parse_url(url,'QUERY','channelId'),'')) not like 'news%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%sport%' and lower(coalesce(parse_url(url,'QUERY','v'),'')) not like '%news%')    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%sports%'    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and lower(parse_url(url,'QUERY','v')) like '%news%'    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.qq.com/livemsg%' and parse_url(url,'QUERY','channelId') like 'news%'    then    'vd_qq'    " +
+                        "        when    (url like 'http://btrace.qq.com/kvcollect%' and parse_url(url,'QUERY','step') in ('3','6') and user_agent like '%MicroMessenger%')    then    'vd_qq'    " +
+                        "        when    url like 'http://vv.video.qq.com/getvbkey%' and user_agent like '%QQSports%'    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.aiseet.atianqi.com/livemsg%'    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.cp81.ott.cibntv.net/livemsg%'    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.ott.video.qq.com/livemsg%'    then    'vd_qq'    " +
+                        "        when    url like 'http://live%.l.t002.ottcn.com/livemsg?%'    then    'vd_qq'    " +
+                        "        when    url like 'http://tv.t002.ottcn.com/i-tvbin/qtv_video/video_recommend/exit_recommend?%'    then    'vd_qq'    " +
+                        "        when    url_host='tv.cp81.ott.cibntv.net'    then    'vd_qq'    " +
+                        "        when    url_host='btrace.play.cp81.ott.cibntv.net'    then    'vd_qq'    " +
+                        "        when    url like 'http://vv.video.qq.com%' and user_agent not like '%QQSports%'    then    'vd_qq'    " +
+                        "        when    url like 'http://info.zb.video.qq.com/?%'    then    'vd_qq'    " +
+                        "        when    url like 'http://tv.aiseet.atianqi.com/i-tvbin/qtv_video/get_lookhim?%'    then    'vd_qq'    " +
+                        "        when    url like 'http://vv.play.aiseet.atianqi.com/getvinfo%'    then    'vd_qq'    " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com%'    then    'vd_qq'    " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=pgv.live.qq.com&url=/txv/cover/%'    then    'vd_qq'    " +
+                        "        when    url like 'http://pingfore.qq.com/pingd?dm=v.qq.com&url=/x/cover/%'    then    'vd_qq'    " +
+                        "        when    url like 'http://bullet.video.qq.com/fcgi-bin/target/regist?%'    then    'vd_qq'    " +
+                        "        when    url like 'http://btrace.qq.com/kvcollect%'    then    'vd_qq'    " +
+                        "        when    url like 'http://btrace.video.qq.com%'    then    'vd_qq'    " +
+                        "        when    url like 'http://pay.video.qq.com%'    then    'vd_qq'    " +
+                        "        when    url like 'http://v.qq.com%'    then    'vd_qq'    " +
+                        "        when    url_host='ups.youku.com' and url like 'http://ups.youku.com/ups/get.json%'    then    'vd_youku'    " +
+                        "        when    url like 'http://api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://api.mobile.youku.com/layout/ipad%/play/detail%' or url like 'http://api.mobile.youku.com/layout/android%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.mobile.youku.com/layout/ios%/play/detail%' or url like 'http://detail.api.mobile.youku.com/layout/android%/play/detail%'    then    'vd_youku'    " +
+                        "        when    url_host='api.mobile.youku.com' and url like 'http://api.mobile.youku.com/player/audio/switch%'    then    'vd_youku'    " +
+                        "        when    url_host='das.api.mobile.youku.com' and url like 'http://das.api.mobile.youku.com/show/relation/%'    then    'vd_youku'    " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','vid'))>2    then    'vd_youku'    " +
+                        "        when    url_host='iyes.youku.com' and url like 'http://iyes.youku.com/adv?%' and length(parse_url(url,'QUERY','v'))>2    then    'vd_youku'    " +
+                        "        when    url_host in('val.atm.youku.com') and length(parse_url(url,'QUERY','v'))>2    then    'vd_youku'    " +
+                        "        when    url_host in('v.youku.com','val.atm.youku.com' ,'ykrec.youku.com','vip.youku.com') and length(parse_url(url,'QUERY','vid'))>2    then    'vd_youku'    " +
+                        "        when    url_host in ('cmstool.youku.com')    then    'vd_youku'    " +
+                        "        when    url_host='v.youku.com' and url like 'http://v.youku.com/v_show/id_%'    then    'vd_youku'    " +
+                        "        when    url_host='playlog.youku.com'    then    'vd_youku'    " +
+                        "        when    url_host='vali.cp31.ott.cibntv.net'    then    'vd_youku'    " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/%/common/h265/play%'    then    'vd_youku'    " +
+                        "        when    url like 'http://tv.api.3g.youku.com/%/common/h265/play%' or url like 'http://tv.api.3g.youku.com/adv%'    then    'vd_youku'    " +
+                        "        when    url like 'http://cibn.api.3g.cp31.ott.cibntv.net/player/cpplayinfo?%'    then    'vd_youku'    " +
+                        "        when    url like 'http://ups.cp31.ott.cibntv.net/ups/get.json?%'    then    'vd_youku'    " +
+                        "        when    url like 'http://pl.cp12.wasu.tv/playlist/m3u8?%'    then    'vd_youku'    " +
+                        "        when    url like 'http://val.atm.cp31.ott.cibntv.net/show?%'    then    'vd_youku'    " +
+                        "        when    url like 'http://statis.api.3g.youku.com/openapi-wireless/statis/vv%'    then    'vd_youku'    " +
+                        "        when    url_host='vali-dns.cp31.ott.cibntv.net'    then    'vd_youku'    " +
+                        "        when    url like 'http://gm.mmstat.com/yt/preclk%' and parse_url(url,'QUERY','turl') like '%show%'    then    'vd_youku'    " +
+                        "        when    url like 'http://m.atm.youku.com/dot/video?%' and parse_url(url,'QUERY','os')='ios'    then    'vd_youku'    " +
+                        "        when    url like 'http://v2html.atm.youku.com/vhtml?%'    then    'vd_youku'    " +
+                        "        when url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') then 'ximalaya'  " +
+                        "        end model,prov_id   " +
+                        "    from user_action_tmpsamplebase   " +
+                        "where   ( instr(url_host,'inews.qq.com')>0  and (( instr(url,'getSimpleNews')>0 and (instr(url,'&id=')>0 or instr(url,'&child=')>0 or instr(url,'&pagestartFrom')>0) ) or  ( instr(url,'getNewsRelateModule')>0  and (instr(url,'&id=')>0 or instr(url,'&child=')>0 or instr(url,'&pagestartFrom')>0) )))  " +
+                        "        or (url_host='p.ssp.qq.com' and  (instr(url,'&article_id=')>0 or instr(url,'&channel=')>0))  " +
+                        "        or (url_host='lives.l.qq.com' and (instr(url,'&articleId=')>0 and instr(url,'&channelId=')>0))  " +
+                        "        or (instr(url_host,'snssdk.com')>0 and (url like '%article/information%app_name=news_article%' or instr(url,'news/feed')>0) )  " +
+                        "        or (url_host='krcs.kugou.com'  and instr(url,'keyword=')>0 )  " +
+                        "        or ((url_host like 'a%.pstatp.com' or url_host like 'a%.bytecdn.cn') and instr(url,'/article/content/')>0 )  " +
+                        "        or (url_host in ('mobwsa.ximalaya.com','adse.wsa.ximalaya.com','mobile.ximalaya.com') and (instr(url,'albumId=')>0 or instr(url,'album=')>0) )  " +
+                        "        or (url_host in ('t13img.yangkeduo.com','t00img.yangkeduo.com','pinduoduoimg.yangkeduo.com') and (instr(url,'goods/images')>0 or instr(url,'cart')>0 or instr(url,'promotion')>0))  " +
+                        "        or (url_host='bjacshow.kugou.com' and instr(url,'singerAndSong=')>0 ) " +
+                        "        or data_model='model2' ");
 
                 saveData(contextDay, DEFAULT_FORMAT, true, "pt_days","model","prov_id");
                 //清除所有cache

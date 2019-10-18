@@ -62,7 +62,7 @@ select t.*,
      left join
         (select device_number
          from zba_dwa.dwa_v_m_cus_nm_user_info b
-         where b.month_id='201907'
+         where b.month_id='201908'
          and b.product_class not in ( '90063345','90065147','90065148','90109876','90155946','90163731','90209546','90209558','90284307','90284309',
                                 '90304110','90308773','90305357','90331359','90315327','90357729','90310454','90310862','90348254','90348246',
                                 '90350506','90351712','90359657','90361349','90391107','90395536','90396856','90352112','90366057','90373707',
@@ -82,7 +82,7 @@ select substr(pt_days,0,6) pt_days,
        count(distinct pt_days) active_days,
        sum(pv) pv
     from  tmp_user_app_yy_d
-   where pt_days>='20190301' and pt_days<='20190831'
+   where pt_days>='20190301' and pt_days<='20190931'
      group by
        substr(pt_days,0,6),
        device_number,
@@ -127,7 +127,7 @@ select 'app日活' model,
         count(distinct device_number) uv,
         count(distinct device_number1) uv1
     from tmp_user_app_yy_d
-    where pt_days>='20190801' and pt_days<='20190831'
+    where pt_days>='20190901' and pt_days<='20190931'
     group by pt_days,appname;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
@@ -145,7 +145,7 @@ select  '行业日活' model,
         count(distinct(case when appname in ('qq_music','kuwo','kugou','wangyi_music') then device_number else null end)) uv3,
         count(distinct(case when appname in ('qq_music','kuwo','kugou','wangyi_music') then device_number1 else null end)) uv4
       from  tmp_user_app_yy_d
-    where pt_days>='20190801' and pt_days<='20190831'
+    where pt_days>='20190901' and pt_days<='20190931'
     group by pt_days;
 
 
@@ -157,13 +157,13 @@ select '月份' month_id,
        'App' appname,
        'uv' uv,
        'uv-剔除流量卡' uv1;
-select '201908' month_id,
+select '201909' month_id,
        'app月活' model,
         appname,
         count(distinct device_number) uv,
         count(distinct device_number1) uv1
     from tmp_user_app_yy_m
-    where pt_days='201908'
+    where pt_days='201909'
     group by appname;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
@@ -176,19 +176,19 @@ select '月份' month_id,
        '新闻行业uv-剔除流量卡' uv2,
        '音乐行业uv' uv3,
        '音乐行业uv-剔除流量卡' uv4;
-select '201908' month_id,
+select '201909' month_id,
        '行业月活' model,
         count(distinct(case when appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng') then device_number else null end)) uv1,
         count(distinct(case when appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng') then device_number1 else null end)) uv2,
         count(distinct(case when appname in ('qq_music','kuwo','kugou','wangyi_music') then device_number else null end)) uv3,
         count(distinct(case when appname in ('qq_music','kuwo','kugou','wangyi_music') then device_number1 else null end)) uv4
       from  tmp_user_app_yy_m
-     where pt_days='201908';
+     where pt_days='201909';
 
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 -- 各家新闻独占
-select '201908' month_id,
+select '201909' month_id,
        '各家新闻独占' model,
        top1_app,
        count(*)
@@ -204,7 +204,7 @@ select '201908' month_id,
                       device_number,
                       pv
                  from  tmp_user_app_yy_m
-                 where pt_days = '201908'
+                 where pt_days = '201909'
                    and appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')
                   ) a) a
       group by device_number) b
@@ -215,7 +215,7 @@ select '201908' month_id,
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 -- 新闻两两重合
-select  '201908' month_id,
+select  '201909' month_id,
         '新闻两两重合' model,
         'qq&&toutiao' qq_toutiao,
         'qq&&wangyi' qq_wangyi,
@@ -240,7 +240,7 @@ select  '201908' month_id,
         'ifeng&&sohu' ifeng_sohu
 union  all
 select
-      '201908' month_id,
+      '201909' month_id,
       '新闻两两重合' model,
       sum(case  when qq_flg='1' and tt_flg='1' then 1 else 0 end) qq_toutiao ,
       sum(case  when qq_flg='1' and wy_flg='1' then 1 else 0 end) qq_wangyi ,
@@ -278,7 +278,7 @@ select
                       device_number,
                       pv
                  from  tmp_user_app_yy_m
-                 where pt_days = '201908'
+                 where pt_days = '201909'
                   and  appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')
                   ) a
         group by device_number) b
@@ -287,7 +287,7 @@ where cnt>=2;
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 -- 新闻重合用户偏好
-select '201908' month_id,
+select '201909' month_id,
        '新闻APP重合用户偏好' model,
         top1_app,
         count(*) uv
@@ -303,7 +303,7 @@ from
                       device_number,
                       pv
                  from  tmp_user_app_yy_m
-                 where pt_days = '201908'
+                 where pt_days = '201909'
                    and appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')
                   ) a) b
     group by  device_number) c
@@ -319,7 +319,7 @@ select '月份' month_id,
        '日期' pt_days,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select '201908' month_id,
+select '201909' month_id,
       '各家app永久新增' model,
        appname,
        pt_days,
@@ -327,7 +327,7 @@ select '201908' month_id,
        count(distinct device_number1) uv1
  from
       tmp_user_app_yy_new
- where  pt_days>='20190801'
+ where  pt_days>='20190901'
 group by pt_days,
          appname
 order by appname,
@@ -341,14 +341,14 @@ select '月份' month_id,
        '日期' pt_days,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select    '201908' month_id,
+select    '201909' month_id,
           '各app流失用户' model,
            a.appname,
            a.pt_days,
            count(distinct a.device_number) uv,
            count(distinct a.device_number1) uv1
       from  tmp_user_app_yy_loss a
-      where pt_days>='20190801' and pt_days<='20190831'
+      where pt_days>='20190901' and pt_days<='20190931'
       group by pt_days,
               appname;
 
@@ -359,13 +359,13 @@ select '月份' month_id,
        'App' appname,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select    '201908' month_id,
+select    '201909' month_id,
           '各家app留存' model,
           a.appname,
           count(distinct a.device_number) uv,
           count(distinct a.device_number1) uv1
       from  tmp_user_app_yy_m a
-      where a.pt_days='201907'
+      where a.pt_days='201908'
         and a.appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng','qq_music','kuwo','kugou','wangyi_music')
         and exists
           (select * from
@@ -373,7 +373,7 @@ select    '201908' month_id,
                       device_number,
                       appname
                   from  tmp_user_app_yy_m
-                  where pt_days='201908'
+                  where pt_days='201909'
                   and appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng','qq_music','kuwo','kugou','wangyi_music')
                   ) a1
               where a.appname=a1.appname and a.device_number=a1.device_number)
@@ -387,7 +387,7 @@ select '月份' month_id,
        '来源App' srcapp,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select '201908' month_id,
+select '201909' month_id,
        '新闻各app新增来源' model,
         tarapp,
         srcapp,
@@ -407,7 +407,7 @@ select '201908' month_id,
               appname tarapp
           from
             tmp_user_app_yy_new
-          where pt_days>='20190801' and pt_days<='20190831'
+          where pt_days>='20190901' and pt_days<='20190931'
             and appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')) b
 left join
       (select
@@ -424,7 +424,7 @@ group by tarapp,
          srcapp;
 
 
-select '201908' month_id,
+select '201909' month_id,
        '新闻各app自然新增' model,
         tarapp,
         count(distinct device_number) uv,
@@ -449,7 +449,7 @@ from
                 appname tarapp
             from
               tmp_user_app_yy_new
-            where pt_days>='20190801' and pt_days<='20190831'
+            where pt_days>='20190901' and pt_days<='20190931'
               and appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')) b
   left join
         (select
@@ -471,12 +471,12 @@ group by tarapp;
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 select
-       '各app201907新增-201908留存' model,
+       '各app201908新增-201909留存' model,
        'App' appname,
        'uv' uv,
        'uv_剔除流量卡' uv1;
 select
-       '各app201907新增-201908留存' model,
+       '各app201908新增-201909留存' model,
        b.appname,
        count(distinct b.device_number) uv,
        count(distinct b.device_number1) uv1
@@ -486,7 +486,7 @@ select
         appname
      from
        tmp_user_app_yy_new
-    where pt_days>='20190701' and pt_days<='20190731'
+    where pt_days>='20190801' and pt_days<='20190831'
   group by device_number,
            device_number1,
            appname) b
@@ -497,7 +497,7 @@ select
                 device_number,
                 appname
             from  tmp_user_app_yy_m
-            where pt_days = '201908'
+            where pt_days = '201909'
             )  b1
         where  b.device_number=b1.device_number
           and  b.appname=b1.appname)
@@ -506,12 +506,12 @@ group by b.appname;
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 select
-       '各app201906新增-201907,08留存' model,
+       '各app201908新增-201908,08留存' model,
        'App' appname,
        'uv' uv,
        'uv_剔除流量卡' uv1;
 select
-       '各app201906新增-201907,08留存' model,
+       '各app201908新增-201908,08留存' model,
        b.appname,
        count(distinct b.device_number) uv,
        count(distinct b.device_number1) uv1
@@ -521,7 +521,7 @@ select
         appname
      from
        tmp_user_app_yy_new
-    where pt_days>='20190601' and pt_days<='20190631'
+    where pt_days>='20190801' and pt_days<='20190831'
   group by device_number,
            device_number1,
            appname) b
@@ -533,7 +533,7 @@ select
                 appname,
                 count(distinct pt_days) am
             from  tmp_user_app_yy_m
-            where pt_days in ('201907','201908')
+            where pt_days in ('201908','201909')
           group by device_number,
                    appname
             )  b1
@@ -544,13 +544,13 @@ group by b.appname;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
 
-select '201908' month_id,
+select '201909' month_id,
        '新闻各app流失去向' model,
        '统计App' tarapp,
        '流向App' srcapp,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select '201908' month_id,
+select '201909' month_id,
       '新闻各app流失去向' model,
        srcapp,
        tarapp,
@@ -569,7 +569,7 @@ select '201908' month_id,
             a.device_number,
             a.appname
         from  tmp_user_app_yy_loss a
-        where a.pt_days>='20190801' and a.pt_days<='20190831'
+        where a.pt_days>='20190901' and a.pt_days<='20190931'
           and a.appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')) b
   left join
           (select
@@ -586,7 +586,7 @@ group by tarapp,
          srcapp;
 
 
- select '201908' month_id,
+ select '201909' month_id,
        '新闻各app自然流失' model,
         srcapp,
         count(distinct device_number) uv,
@@ -610,7 +610,7 @@ group by tarapp,
                  a.device_number,
                  a.appname
              from  tmp_user_app_yy_loss a
-             where a.pt_days>='20190801' and a.pt_days<='20190831'
+             where a.pt_days>='20190901' and a.pt_days<='20190931'
              and a.appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')) b
      left join
              (select
@@ -633,7 +633,7 @@ group by tarapp,
 select '-- -- -*******************************************************************************************************************-- -- -';
 
 -- -各家音乐APP独占
-select '201908' month_id,
+select '201909' month_id,
        '各家音乐APP独占' model,
        top1_app,
        count(*)
@@ -649,7 +649,7 @@ select '201908' month_id,
                       device_number,
                       pv
                   from  tmp_user_app_yy_m
-                where  pt_days='201908'
+                where  pt_days='201909'
                  and appname in ('qq_music','kuwo','kugou','wangyi_music')
                   ) a ) a
       group by device_number) b
@@ -659,7 +659,7 @@ select '201908' month_id,
 
 select '-- -- -*******************************************************************************************************************-- -- -';
 -- 音乐APP两两重合
-select  '201908' month_id,
+select  '201909' month_id,
         '音乐APP两两重合' model,
         'qq&&kuwo' qq_kuwo ,
         'qq&&wangyi' qq_wangyi ,
@@ -667,7 +667,7 @@ select  '201908' month_id,
         'kuwo&&wangyi' kuwo_wangyi ,
         'kuwo&&kugou' kuwo_kugou ,
         'wangyi&&kugou' wangyi_kugou;
-select '201908' month_id,
+select '201909' month_id,
       '音乐APP两两重合' model,
       sum(case  when qq_flg='1' and kw_flg='1' then 1 else 0 end) qq_kuwo ,
       sum(case  when qq_flg='1' and wy_flg='1' then 1 else 0 end) qq_wangyi ,
@@ -687,7 +687,7 @@ select '201908' month_id,
                       device_number,
                       pv
                   from  tmp_user_app_yy_m
-                where  pt_days='201908'
+                where  pt_days='201909'
                  and appname in ('qq_music','kuwo','kugou','wangyi_music')
                   ) a
         group by device_number) b
@@ -695,7 +695,7 @@ where cnt>=2;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
 -- 音乐重合用户偏好
-select '201908' month_id,
+select '201909' month_id,
        '音乐APP重合用户偏好' model,
         top1_app,
         count(*) uv
@@ -711,7 +711,7 @@ from
                       device_number,
                       pv
                  from  tmp_user_app_yy_m
-                 where pt_days = '201908'
+                 where pt_days = '201909'
                    and appname in ('qq_music','kuwo','kugou','wangyi_music')
                   ) a) b
     group by  device_number) c
@@ -729,7 +729,7 @@ select '月份' month_id,
        '来源App' srcapp,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select '201908' month_id,
+select '201909' month_id,
        '音乐各app新增来源' model,
         tarapp,
         srcapp,
@@ -749,7 +749,7 @@ select '201908' month_id,
               appname tarapp
           from
             tmp_user_app_yy_new
-          where pt_days>='20190801' and pt_days<='20190831'
+          where pt_days>='20190901' and pt_days<='20190931'
             and appname in ('qq_music','kuwo','kugou','wangyi_music')) b
 left join
       (select
@@ -765,7 +765,7 @@ where c.diff>0 and c.diff<=90
 group by tarapp,
          srcapp;
 
-select '201908' month_id,
+select '201909' month_id,
        '音乐各app自然新增' model,
         tarapp,
         count(distinct device_number) uv,
@@ -790,7 +790,7 @@ from
               appname tarapp
           from
             tmp_user_app_yy_new
-          where pt_days>='20190801' and pt_days<='20190831'
+          where pt_days>='20190901' and pt_days<='20190931'
             and appname in ('qq_music','kuwo','kugou','wangyi_music')) b
 left join
       (select
@@ -811,13 +811,13 @@ group by tarapp;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
 
-select '201908' month_id,
+select '201909' month_id,
        '音乐各app流失去向' model,
        '统计App' tarapp,
        '流向App' srcapp,
        'uv' uv,
        'uv_剔除流量卡' uv1;
-select '201908' month_id,
+select '201909' month_id,
       '音乐各app流失去向' model,
        srcapp,
        tarapp,
@@ -836,7 +836,7 @@ select '201908' month_id,
             a.device_number,
             a.appname
         from  tmp_user_app_yy_loss a
-        where a.pt_days>='20190801' and a.pt_days<='20190831'
+        where a.pt_days>='20190901' and a.pt_days<='20190931'
           and a.appname in ('qq_music','kuwo','kugou','wangyi_music')) b
   left join
           (select
@@ -853,7 +853,7 @@ group by tarapp,
          srcapp;
 
 
- select '201908' month_id,
+ select '201909' month_id,
        '音乐各app自然流失' model,
         srcapp,
         count(distinct device_number) uv,
@@ -877,7 +877,7 @@ group by tarapp,
                  a.device_number,
                  a.appname
              from  tmp_user_app_yy_loss a
-             where a.pt_days>='20190801' and a.pt_days<='20190831'
+             where a.pt_days>='20190901' and a.pt_days<='20190931'
              and a.appname in ('qq_music','kuwo','kugou','wangyi_music')) b
      left join
              (select
@@ -900,7 +900,7 @@ select '-- -- -*****************************************************************
 
 
 select  '忠诚用户统计' model,
-        '201908' month_id,
+        '201909' month_id,
         'app' appname,
         '活跃2天及以上用户量' cnt2,
         '活跃3天及以上用户量' cnt3,
@@ -908,7 +908,7 @@ select  '忠诚用户统计' model,
         '活跃5天及以上用户量' cnt5
 ;
 select '忠诚用户统计' model,
-      '201908' month_id,
+      '201909' month_id,
        appname,
        count(distinct(case when cast(ad_m1 as int)>=2 and cast(ad_m2 as int)>=2 then device_number else null end)) cnt2,
        count(distinct(case when cast(ad_m1 as int)>=3 and cast(ad_m2 as int)>=3 then device_number else null end)) cnt3,
@@ -918,10 +918,10 @@ select '忠诚用户统计' model,
   (select
         appname,
         device_number,
-        max(case when pt_days='201907' then active_days else 0 end) ad_m1,
-        max(case when pt_days='201908' then active_days else 0 end) ad_m2
+        max(case when pt_days='201908' then active_days else 0 end) ad_m1,
+        max(case when pt_days='201909' then active_days else 0 end) ad_m2
       from tmp_user_app_yy_m
-      where  pt_days in ('201907','201908')
+      where  pt_days in ('201908','201909')
       group by appname,
               device_number) a
   group by appname;
@@ -956,7 +956,7 @@ select '月份' month_id,
        'uv_sohu->^wangyi' uv19,
        'uv_^sohu->wangyi' uv20
 ;
-select '201908' month_id,
+select '201909' month_id,
        '新闻行业流失分析' model,
         count(distinct(case when tarapp is not null then device_number else null end)) uv0,
         count(distinct(case when tarapp is null then device_number else null end)) uv1,
@@ -992,7 +992,7 @@ from
             a.device_number,
             a.appname
         from  tmp_user_app_yy_loss a
-        where a.pt_days>='20190801' and a.pt_days<='20190831'
+        where a.pt_days>='20190901' and a.pt_days<='20190931'
           and a.appname in ('tencent_news','toutiao','kuaibao','wangyinews','sina_news','sohu_news','ifeng')) b
  left join
           (select
@@ -1018,9 +1018,9 @@ select '手百TOP200APP' model,
        sum(visit_dura) dur
 from
     zb_dwa.dwa_m_ia_basic_user_app t,
-    (select device_number from  user_action_app_d where pt_days>='20190801' and pt_days<='20190831' and appname='mobbaidu' group by device_number) t1
+    (select device_number from  user_action_app_d where pt_days>='20190901' and pt_days<='20190931' and appname='mobbaidu' group by device_number) t1
  where t.device_number=t1.device_number
-   and t.month_id='201908'
+   and t.month_id='201909'
 group by t.prod_name;
 
 select '-- -- -*******************************************************************************************************************-- -- -';
@@ -1034,7 +1034,7 @@ select '联通全量Top200App' model,
        sum(visit_dura) dur
 from
     zb_dwa.dwa_m_ia_basic_user_app t
- where t.month_id='201908'
+ where t.month_id='201909'
  group by t.prod_name
  ;
 
@@ -1064,13 +1064,13 @@ select b.*,
                         max(case when instr(urltag,'topBuzz')>0 then 1 else 0 end) tag10,
                         max(case when instr(urltag,'sceneId=')>0 then 1 else 0 end) tag11
                     from  user_action_tag_d
-                    where pt_days>='20190701' and pt_days<='20190831'
+                    where pt_days>='20190801' and pt_days<='20190931'
                     and instr(url_host,'ximalaya.com')>0
                     group BY
                         substr(pt_days,0,6),
                         device_number) a) b
         left join
-            (select * from tmp_user_app_yy_m  where appname='ximalaya' and pt_days>='201907') b1
+            (select * from tmp_user_app_yy_m  where appname='ximalaya' and pt_days>='201908') b1
         ON (cast(b.pt_days as bigint)+1)=b1.pt_days
         and b.device_number=b1.device_number;
 

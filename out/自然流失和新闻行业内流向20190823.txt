@@ -1,0 +1,20 @@
+nohup: ignoring input
+Java HotSpot(TM) 64-Bit Server VM warning: Using incremental CMS is deprecated and will likely be removed in a future release
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/opt/beh/core/hbase/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/beh/core/hadoop/share/hadoop/common/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]
+201907	音乐各app自然流失	kugou	485160	294738
+201907	音乐各app自然流失	kuwo	228026	156272
+201907	音乐各app自然流失	qq_music	462967	252733
+201907	音乐各app自然流失	wangyi_music	197095	109771
+201907	新闻各app自然流失	ifeng	147397	95796
+201907	新闻各app自然流失	kuaibao	95413	52009
+201907	新闻各app自然流失	sina_news	126498	83863
+201907	新闻各app自然流失	sohu_news	52345	34585
+201907	新闻各app自然流失	tencent_news	367590	196389
+201907	新闻各app自然流失	toutiao	375894	241711
+201907	新闻各app自然流失	wangyinews	118446	75500
+月份	新闻行业流失分析	uv_行业内竞品流失	uv_行业流失	uv_流向腾讯新闻	uv_流向头条	uv_流向快报	uv_流向网易新闻	uv_流向新浪新闻	uv_流向搜狐新闻	uv_流向凤凰新闻	uv_qq->^tt	uv_^qq->tt	uv_tt->^qq	uv_^tt->qq	uv_wangyi->^sina	uv_^wangyi->sina	uv_sina->^wangyi	uv_^sina->wangyi	uv_wangyi->^sohu	uv_^wangyi->sohu	uv_sohu->^wangyi	uv_^sohu->wangyi
+201907	新闻行业流失分析	2882245	0	1572711	1802789	949968	764197	982903	440457	1192230	430331	1568871	341670	1394905	825604	731255	554420	626887	840945	318371	368701	649851

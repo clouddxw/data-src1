@@ -22,13 +22,13 @@ select t.*,
             max(case when appname = 'uc' then 1 else 0 end) tag14,
             max(case when appname = 'mobbaidu' then 1 else 0 end) tag15,
             max(case when appname = 'ximalaya' then 1 else 0 end) tag16
-      from (select '201908' pt_days,
+      from (select '201909' pt_days,
                    appname,
                    device_number,
                    count(distinct pt_days) active_days,
                    sum(pv) pv
            from  user_action_app_d t
-           where pt_days>='20190801' and pt_days<='20190831'
+           where pt_days>='20190901' and pt_days<='20190931'
            group by appname,
                     device_number) a
       group by device_number
@@ -36,7 +36,7 @@ select t.*,
 left join
     (select device_number
         from zba_dwa.dwa_v_m_cus_nm_user_info b
-        where b.month_id='201907'
+        where b.month_id='201908'
         and b.product_class not in ( '90063345','90065147','90065148','90109876','90155946','90163731','90209546','90209558','90284307','90284309',
                             '90304110','90308773','90305357','90331359','90315327','90357729','90310454','90310862','90348254','90348246',
                             '90350506','90351712','90359657','90361349','90391107','90395536','90396856','90352112','90366057','90373707',
@@ -87,7 +87,7 @@ select
         max(case when url_host='interface.music.163.com' and instr(urltag,'enhance/download')>0 then 1 else 0 end) tag26,
         max(case when instr(url_host,'ximalaya.com')>0 and (instr(urltag,'vipCategory')>0 or instr(urltag,'vipStatus=1')>0 or instr(urltag,'vipStatus=2')>0 or instr(urltag,'vipStatus=3')>0) then 1 else 0 end) tag27
     from  user_action_tag_d
-    where  pt_days>='20190801' and pt_days<='20190831'
+    where  pt_days>='20190901' and pt_days<='20190931'
     group by device_number;
 
 
@@ -121,7 +121,7 @@ select
 --          max(case when url_host='hmma.baidu.com' then 1 else 0 end) tag2,
 --          max(case when url_host='mbd.baidu.com' then 1 else 0 end) tag3
 --      from user_action_tag_d
---      where pt_days>='20190701' and pt_days<='20190731'
+--      where pt_days>='20190801' and pt_days<='20190831'
 --      and  url_host in ('bdbus-turbonet.baidu.com','hmma.baidu.com','mbd.baidu.com')
 --      group by pt_days,
 --              hh,
@@ -132,7 +132,7 @@ select
 drop table if exists tmp_user_app_profile_t3;
 create table tmp_user_app_profile_t3 as
 select device_number from user_action_context_d
-where pt_days>='20190801' and pt_days<='20190831'
+where pt_days>='20190901' and pt_days<='20190931'
     and model='toutiao_article'
 group by device_number;
 
@@ -142,7 +142,7 @@ create table tmp_user_app_profile_t4 as
 select * from
     (select t.*,
         row_number() over(partition by device_number order by age_range desc) rn
-    from user_info_sample t  where pt_days='201907') a
+    from user_info_sample t  where pt_days='201908') a
 where rn=1;
 
 
@@ -806,7 +806,7 @@ select '头条内容点击pv分布' model,
                     when count(*)>20 then '(20,&]'
                 end pv_range
             from user_action_context_d
-         where pt_days>='20190801' and pt_days<='20190831'
+         where pt_days>='20190901' and pt_days<='20190931'
             and model='toutiao_article'
         group by device_number) t
     group by pv_range;
